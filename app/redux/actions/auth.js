@@ -58,11 +58,11 @@ const userLogin = (userData, navigate) => {
         AuthServices.userLogin(userData)
             .then(async (responseData) => {
                 if (responseData.data.success) {
-                    await AsyncStorage.setItem('USER', JSON.stringify(responseData.data.data))
-                    await AsyncStorage.setItem('TOKEN', JSON.stringify(responseData.data.data.token))
-                    await AsyncStorage.setItem('Email', JSON.stringify(userData))
+                    // await AsyncStorage.setItem('USER', JSON.stringify(responseData.data.data))
+                    // await AsyncStorage.setItem('TOKEN', JSON.stringify(responseData.data.data.token))
+                    // await AsyncStorage.setItem('Email', JSON.stringify(userData))
                     await dispatch({ type: USER_LOGIN_SUCCESS, userData: responseData.data.data, loading: !loading })
-                    navigate("Main")
+                    // navigate("Main")
                 }
                 else {
                     dispatch({ type: LOADING_SUCCESS, loading: !loading })
@@ -74,7 +74,7 @@ const userLogin = (userData, navigate) => {
                 dispatch({ type: LOADING_SUCCESS, loading: !loading })
 
                 console.log(err)
-                Alert.alert("Email or Password is incorrect")
+                // Alert.alert("Email or Password is incorrect")
             })
     }
 };
