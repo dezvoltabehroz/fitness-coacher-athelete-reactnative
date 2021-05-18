@@ -18,10 +18,7 @@ const Api = {
         }, config)
     },
     userRegister: function (userData) {
-        return axiosInstance.post('athlete/registerAthlete', {
-            email: userData.email,
-            password: userData.password
-        }, config)
+        return axiosInstance.post('athlete/registerAthlete', userData, config)
     },
     forgotPassword: function (email) {
         return axiosInstance.post('forgot-password', {

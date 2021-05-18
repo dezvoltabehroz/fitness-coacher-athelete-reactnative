@@ -19,6 +19,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import SplashScreen from '../components/auth/Splash'
 import LoginScreen from '../components/auth/Login'
 import CompleteProfile from '../components/completeProfile/CompleteProfile'
+import EmailSent from "../components/completeProfile/EmailSent";
+import ForgotPassword from "../components/completeProfile/ForgotPasswordScreen";
+import ResetPassword from "../components/completeProfile/ResetPasswordScreen";
+
 import BookingScreen from '../components/booking/Booking'
 import NotificationsScreen from '../components/notifications/Notifications'
 import CreateScreen from '../components/create/Create'
@@ -248,6 +252,27 @@ function Router() {
         <Stack.Screen name="Login" component={LoginScreen} options={{
           headerShown: false
         }} />
+           <Stack.Screen
+          name="EmailSent"
+          component={EmailSent}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ForgotPassword"
+          component={ForgotPassword}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ResetPassword"
+          component={ResetPassword}
+          options={{
+            headerShown: false,
+          }}
+        />
         <Stack.Screen name="CompleteProfile" component={CompleteProfile} options={{
           headerTitle: 'REGISTERATION',
           headerTitleAllowFontScaling: true,

@@ -32,12 +32,12 @@ props.navigation.navigate('Login')
       <ImageBackground
         source={require('../../assets/splash.jpg')}
         style={styles.image}>
-        <View style={{ flex: .5, alignItems: 'center', justifyContent: 'center' }}>
+        {/* <View style={{ flex: .5, alignItems: 'center', justifyContent: 'center' }}>
           <Image source={require('../../assets/logo.png')} style={styles.logo} />
-        </View>
-        <View style={{ flex: .5, alignItems: 'center', justifyContent: 'center' }}>
+        </View> */}
+        {/* <View style={{ flex: .5, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={styles.text}>Athlete</Text>
-        </View>
+        </View> */}
       </ImageBackground>
     </View>
   );

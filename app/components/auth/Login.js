@@ -8,38 +8,183 @@ import {
     StatusBar,
     ImageBackground,
     Image,
-    AsyncStorage,
     NativeModules,
     Platform,
     Dimensions
 } from 'react-native';
 import { Colors } from '../../style/colors'
 import { Container, Header, Content, Tab, Tabs } from 'native-base';
-import Input from '../../common/Input'
-import { FontFamily } from '../../style/typograpy'
-import Button from '../../common/Button'
-import { useKeyboard } from './../index'
+import Input from "../../common/Input";
+import { FontFamily } from "../../style/typograpy";
+import Button from "../../common/Button";
+import { useKeyboard } from "./../index";
+import { Link } from "@react-navigation/native";
+
+import { TextInputMask } from "react-native-masked-text";
+
+import NetInfo from "@react-native-community/netinfo";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthServices } from "../../services";
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
-var keyheight=''
+var keyheight = ''
 const SplashScreen = (props) => {
+
+    const [state, setState] = useState({
+        email: "",
+    });
+
+    const [loginEmail, setLoginEmail] = useState("");
+    const [first_name, setFirstname] = useState("");
+    const [last_name, setLastname] = useState("");
+    const [password, setPassword] = useState("");
+    const [loginPassword, setLoginPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [checkFirst_name, setCheckFirstname] = useState(false);
+    const [checkLast_name, setCheckLastname] = useState(false);
+    const [checkEmail, setCheckEmail] = useState(false);
+    const [checkLoginEmail, setCheckLoginEmail] = useState(false);
+    const [checkPassword, setCheckPassword] = useState(false);
+    const [checkLoginPassword, setCheckLoginPassword] = useState(false);
+    const [checkConfirmPassword, setCheckConfirmPassword] = useState(false);
+    const [checkPhone, setCheckPhone] = useState(false);
+    const [checkAddress, setCheckAddress] = useState(false);
+    const [checkDob, setCheckDob] = useState(false);
+    const [checkCountry, setCheckCountry] = useState(false);
+    const [checkRole, setCheckRole] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+
+    const onHandleLoginInputs = (name, value) => {
+        if (name == "loginEmail") {
+            setCheckLoginEmail(false);
+            setLoginEmail(value);
+        } else if (name == "loginPassword") {
+            setCheckLoginPassword(false);
+            setLoginPassword(value);
+        }
+    };
+
+    const loginValidations = () => {
+        if (loginEmail == "") {
+            setCheckLoginEmail(true);
+        } else if (loginPassword == "") {
+            setCheckLoginPassword(true);
+        } else {
+            loginService();
+        }
+    };
+
+    const loginService = async () => {
+        setLoading(true);
+        let loginDetails = {
+            email: loginEmail,
+            password: loginPassword,
+        };
+        AuthServices.userLogin(loginDetails)
+            .then((res) => {
+                console.log("res :", res)
+            })
+            .catch((err) => { setLoading(false); console.log(err) })
+    };
+
     const didShow = (height) => {
         console.log('Keyboard show. Height is ' + height)
         setViewHeight(screenHeight - height)
     }
- 
+
     const didHide = () => {
         console.log('Keyboard hide');
         setViewHeight(screenHeight);
     }
     const [keyboardHeigth] = useKeyboard(didShow, didHide); /* initialize the hook (optional parameters) */
- 
+
     const [viewHeight, setViewHeight] = useState(screenHeight) /* for example with didShow and didHide */
- 
+
     useEffect(() => {
         console.log(keyboardHeigth);
-        keyheight=keyboardHeigth
+        keyheight = keyboardHeigth
     }, [keyboardHeigth])
+
+
+    const checkNetwork = async () => {
+        try {
+            let state = await NetInfo.fetch();
+            if (state.isConnected == true) {
+                checkValidations();
+            } else {
+                alert("Please check your internet connection and try again");
+            }
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    };
+
+    const checkValidations = () => {
+        if (first_name == "") {
+            setCheckFirstname(true);
+        } else if (last_name == "") {
+            setCheckLastname(true);
+        } else if (state.email == "") {
+            setCheckEmail(true);
+        } else if (password == "") {
+            setCheckPassword(true);
+        } else if (password == "") {
+            setCheckConfirmPassword(true);
+        } else if (String(first_name).length <= 2) {
+            alert("firstname must be atleast 3 characters");
+        } else if (String(last_name).length <= 2) {
+            alert("lastname must be atleast 3 characters");
+        } else if (!validateEmail()) {
+            alert("Please enter a proper email");
+        } else if (String(password).length <= 7) {
+            alert("Password must be between 8 to 16 characters");
+        } else if (confirmPassword != password) {
+            alert("Password Mismatch");
+        } else {
+            navigateToNextScreen();
+        }
+    };
+
+    const validateEmail = () => {
+        let email = state.email;
+        let pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return pattern.test(String(email).toLowerCase());
+    };
+
+    const _onHandleChange = (name, value) => {
+        if (name == "first_name") {
+            setCheckFirstname(false);
+            setFirstname(value);
+        } else if (name == "email") {
+            setCheckEmail(false);
+            setState({ email: value });
+        } else if (name == "last_name") {
+            setCheckLastname(false);
+            setLastname(value);
+        } else if (name == "password") {
+            setCheckPassword(false);
+            setPassword(value);
+        } else if (name == "confirmPassword") {
+            setCheckConfirmPassword(false);
+            setConfirmPassword(value);
+        }
+    };
+    const navigateToNextScreen = () => {
+        let data = {
+            firstName: first_name,
+            lastName: last_name,
+            email: state.email,
+            password: password,
+            confirmPassword: confirmPassword,
+        };
+        props.navigation.navigate('CompleteProfile', data);
+        console.log("data is ", data);
+    };
+
 
     return (
         <View style={styles.container}>
@@ -48,38 +193,133 @@ const SplashScreen = (props) => {
                 translucent
                 backgroundColor={'transparent'}
             />
-            <Image source={require('../../assets/logo.png')} style={[styles.logo,{marginTop: keyboardHeigth!=0?0:'23%',}]} />
+            <Image source={require('../../assets/logo.png')} style={[styles.logo, { marginTop: keyboardHeigth != 0 ? 0 : '23%', }]} />
 
             <View style={styles.bottom}>
                 <Tabs tabBarUnderlineStyle={[styles.tabUnderline]} tabContainerStyle={{ elevation: 0, borderTopLeftRadius: 30, borderTopRightRadius: 30, height: 70, borderWidth: 0 }}>
                     <Tab heading="Login" tabStyle={[styles.tab, { borderTopLeftRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopLeftRadius: 30 }]}
                         textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
-                                 <ScrollView showsVerticalScrollIndicator={false}>
-                                <View style={{height:380}}>
-                        <Input text={'Email-Address'}  />
-                        <Input secureTextEntry={true} text={"Password"} 
-                       />
-                                               <View style={{paddingHorizontal:20}}>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <View style={{ height: 380 }}>
+                                <Input
+                                    text={"Email-Address"}
+                                    value={loginEmail}
+                                    onChangeText={(value) => {
+                                        onHandleLoginInputs("loginEmail", value);
+                                        setCheckLoginEmail(false);
+                                    }}
+                                />
+                                {checkLoginEmail == true && (
+                                    <Text style={styles.errorStyle}>Email cannot be empty</Text>
+                                )}
+                                <Input
+                                    text={"Password"}
+                                    secureTextEntry={true}
+                                    value={loginPassword}
+                                    onChangeText={(value) => {
+                                        onHandleLoginInputs("loginPassword", value);
+                                        setCheckLoginPassword(false);
+                                    }}
+                                />
+                                {checkLoginPassword == true && (
+                                    <Text style={styles.errorStyle}>Password cannot be empty</Text>
+                                )}
+                                <View style={{ paddingHorizontal: 20 }}>
 
-                        <Button text={'Login'}  onPress={()=>{props.navigation.navigate('TabContainer')}} />
-                        </View>
-                        </View>
+                                    <Button text={'Login'} onPress={() => { props.navigation.navigate('TabContainer') }} />
+                                </View>
+                                <Link style={styles.linkText} to="/ForgotPassword">
+                                    Forgot your password?
+              </Link>
+                            </View>
                         </ScrollView>
                     </Tab>
-                    <Tab heading="Register" tabStyle={[styles.tab, { borderTopRightRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopRightRadius: 30 }]}
-                        textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
-                            <ScrollView showsVerticalScrollIndicator={false}>
-                                <View style={{height:610}}>
-                        <Input text={'Name'}  />
-                        <Input text={'Email-Address'}  />
-                        <Input secureTextEntry={true}  text={'Password'} />
-                        <Input secureTextEntry={true}  text={'Confirm Password'} />
-                        <View style={{paddingHorizontal:20}}>
-                        <Button text={'Next'} onPress={()=>{props.navigation.navigate('CompleteProfile')}}/>
-                        </View>
-                        <Text style={styles.text}>By signing up, you agree to ECHO's Terms of Use & Provacy Policy</Text>
-                        <View style={{marginBottom:150}}></View>
-                        </View>
+                    <Tab heading="Register"
+                        tabStyle={[styles.tab, { borderTopRightRadius: 30 }]}
+                        activeTabStyle={[styles.activeTab, { borderTopRightRadius: 30 }]}
+                        textStyle={styles.tabText}
+                        activeTextStyle={styles.activeTabText} >
+                        <ScrollView
+                            contentContainerStyle={{
+                                paddingBottom: screenHeight > 667 ? "190%" : "20%",
+                            }}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            <View style={{
+                                // height: 610
+                            }}>
+                                <Input
+                                    text={"First Name"}
+                                    value={first_name}
+                                    onChangeText={(value) => {
+                                        _onHandleChange("first_name", value);
+                                        setCheckFirstname(false);
+                                    }}
+                                />
+                                {checkFirst_name == true && (
+                                    <Text style={styles.errorStyle}>
+                                        Fisrt Name cannot be empty
+                                    </Text>
+                                )}
+                                <Input
+                                    text={"Last Name"}
+                                    value={last_name}
+                                    onChangeText={(value) => {
+                                        _onHandleChange("last_name", value);
+                                        setCheckFirstname(false);
+                                    }}
+                                />
+                                {checkLast_name == true && (
+                                    <Text style={styles.errorStyle}>
+                                        Last Name cannot be empty
+                                    </Text>
+                                )}
+
+                                <Input
+                                    text={"Email Address"}
+                                    value={state.email}
+                                    onChangeText={(value) => {
+                                        _onHandleChange("email", value);
+                                        setCheckEmail(false);
+                                    }}
+                                />
+                                {checkEmail == true && (
+                                    <Text style={styles.errorStyle}>Email cannot be empty</Text>
+                                )}
+                                <Input
+                                    secureTextEntry={true}
+                                    text={"Password"}
+                                    value={password}
+                                    onChangeText={(value) => {
+                                        _onHandleChange("password", value);
+                                        setCheckPassword(false);
+                                    }}
+                                />
+                                {checkPassword == true && (
+                                    <Text style={styles.errorStyle}>
+                                        Password cannot be empty
+                                    </Text>
+                                )}
+                                <Input
+                                    secureTextEntry={true}
+                                    text={"Confirm Password"}
+                                    value={confirmPassword}
+                                    onChangeText={(value) => {
+                                        _onHandleChange("confirmPassword", value);
+                                        setCheckPassword(false);
+                                    }}
+                                />
+                                {checkPassword == true && (
+                                    <Text style={styles.errorStyle}>
+                                        Confirm password cannot be empty
+                                    </Text>
+                                )}
+                                <View style={{ paddingHorizontal: 20 }}>
+                                    <Button text={'Next'} onPress={() => { checkNetwork(); }} />
+                                </View>
+                                <Text style={styles.text}>By signing up, you agree to ECHO's Terms of Use & Privacy Policy</Text>
+                                <View style={{ marginBottom: 150 }}></View>
+                            </View>
                         </ScrollView>
                     </Tab>
                 </Tabs>
@@ -128,33 +368,43 @@ const styles = StyleSheet.create({
         height: '100%',
         resizeMode: 'cover'
     },
+    errorStyle: {
+        fontSize: 12,
+        color: "red",
+        paddingLeft: 20,
+    },
     logo:
     {
         height: 100,
         width: 500,
         alignSelf: 'center',
-        marginTop:'23%',
+        marginTop: '23%',
         marginBottom: '10%'
 
     },
     text:
     {
         fontSize: 11,
+        textAlign: "center",
         color: Colors.blackColor,
-        fontFamily:FontFamily.helveticaBold,
-        marginHorizontal:25,
-        marginTop:10
+        fontFamily: FontFamily.helveticaBold,
+        marginHorizontal: 25,
+        marginTop: 10
 
     },
     bottom:
     {
-        height: '80%',
+        height: '100%',
         width: '100%',
         backgroundColor: Colors.whiteColor,
         borderTopRightRadius: 35,
         borderTopLeftRadius: 35
-    }
-
+    },
+    linkText: {
+        color: "orange",
+        marginTop: "5%",
+        textAlign: "center",
+    },
 });
 
 export default SplashScreen;

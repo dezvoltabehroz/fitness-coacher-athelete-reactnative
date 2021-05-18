@@ -8,22 +8,189 @@ import {
     StatusBar,
     ImageBackground,
     Image,
-    AsyncStorage,
+    TouchableOpacity,
     NativeModules,
     Platform,
-    Dimensions
+    Dimensions,
+    FlatList
 } from 'react-native';
 import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy';
 import Button from '../../common/Button'
+import Input from "../../common/Input";
 import { RadioButton } from 'react-native-paper';
-import RegisterationModal from '../../common/RegisterationModal'
+import RegisterationModal from '../../common/RegisterationModal';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import CountryPicker, { FlagButton } from 'react-native-country-picker-modal';
+import PhoneInput from 'react-native-phone-input';
+import moment from 'moment';
+import NetInfo from "@react-native-community/netinfo";
+import { AuthServices } from '../../services';
+import { launchImageLibrary } from 'react-native-image-picker';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Calendar from 'react-native-vector-icons/Feather';
 const height = Dimensions.get('window').height
-const CompleteProfile = (props) => {
+const width = Dimensions.get('window').width
+const CompleteProfile = ({ navigation, route }) => {
+    const data = route.params;
+    // console.log("data is", data);
     const [checked, setChecked] = useState('baseBall')
     const [skillLevel, setSkillLevel] = useState('recreational')
-    const [ageGroup,setAgeGroup]=useState('9')
-    const[modalVisible,setModalVisible]=useState(false)
+    const [ageGroup, setAgeGroup] = useState('')
+    const [modalVisible, setModalVisible] = useState(false)
+    const [date, setDate] = useState("")
+    const [showDatePicker, setShowDatePicker] = useState(false)
+    const [countryModal, setCountryModal] = useState(false);
+    const [country, setCountry] = useState("")
+    const [address, setAddress] = useState("")
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [submit, setSubmit] = useState(false)
+    const [checkAgeGroup, setCheckAgeGroup] = useState(false);
+    const [image, setImage] = useState('')
+    const phoneRef = React.createRef(null);
+    const [arr, setArr] = useState([
+        {
+            flag: true,
+            age: "Under-9",
+        },
+        {
+            flag: false,
+            age: "10-11",
+        },
+        {
+            flag: false,
+            age: "12-14",
+        },
+        {
+            flag: false,
+            age: "15-16",
+        },
+        {
+            flag: false,
+            age: "18+",
+        },
+    ]);
+
+    const [prev, setPrev] = useState(0);
+
+    const onSelect = async (country) => {
+        console.log(country)
+        await setCountry(country.name);
+
+        await setCountryModal(false)
+
+    };
+
+    const _flagButton = () => {
+        return (
+            <TouchableOpacity activeOpacity={0.9} onPress={() => setCountryModal(!countryModal)} >
+                <View style={{}}>
+                    <FlagButton
+                        onOpen={() => setCountryModal(!countryModal)}
+                        onClose={() => setCountryModal(!countryModal)}
+                        placeholder={""}
+                        withEmoji={false}
+                        withFlagButton={false}
+                        // countryCode={countryCode != "" ? countryCode : ""}
+                        containerButtonStyle={{ height: 0 }}
+                    />
+                </View>
+            </TouchableOpacity>
+        )
+    }
+
+    const hideDatePicker = () => {
+        setShowDatePicker(!showDatePicker);
+    };
+
+    const handleConfirm = (selectedDate) => {
+        var date = moment(selectedDate).format('YYYY-MM-DD')
+        setDate(date);
+        hideDatePicker();
+    };
+
+
+    const checkNetwork = async () => {
+        console.log("internet called");
+        try {
+            let state = await NetInfo.fetch();
+            if (state.isConnected == true) {
+                // call your function here
+                checkValidations();
+                // getAtheleteDetails();
+            } else {
+                alert("Please check your internet connection and try again");
+            }
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    };
+
+    const checkValidations = () => {
+        if (!submit) {
+            setSubmit(true);
+            console.log(submit)
+        } else if (ageGroup == "") {
+            setCheckAgeGroup(true);
+        } else if (!submit) {
+            setSubmit(true);
+            console.log(submit)
+        }
+        else {
+            getAtheleteDetails();
+        }
+    };
+
+    const getAtheleteDetails = async () => {
+        let userData = JSON.stringify({
+            firstName: route.params.firstName,
+            lastName: route.params.lastName,
+            email: route.params.email,
+            password: route.params.password,
+            phone: phoneNumber,
+            address: address,
+            dob: moment(date).format('YYYY-MM-DD'),
+            role: 'athlete',
+            country: country,
+            ageGroup: ageGroup,
+        });
+        console.log("userdata is", userData);
+        // navigation.navigate("EmailSent");
+
+        AuthServices.userRegister(userData)
+            .then(response => {
+                if (response.data.success != undefined && response.data.success == true) {
+                    console.log("response", response);
+                    setModalVisible(!modalVisible)
+                    // navigation.navigate("EmailSent");
+                } else {
+                    console.log("error in service");
+                }
+            })
+            .catch((error) => {
+                alert(error);
+                console.log(error);
+            })
+    };
+    const launchGallery = () => {
+        launchImageLibrary(
+            {
+                title: "Pick photo from storage",
+                storageOptions: {
+                    skipBackup: true,
+                    path: 'images',
+                },
+            },
+            async (response) => {
+                if (response.error) { }
+                else if (response.uri != undefined) {
+                    setImage(response.uri);
+                }
+            })
+    }
+
+
     return (
         <View style={styles.container}>
             <StatusBar
@@ -33,13 +200,123 @@ const CompleteProfile = (props) => {
             />
             <ScrollView style={styles.bottom}>
                 <View style={styles.profile}>
-                    <Image source={require('../../assets/avatar.png')} style={styles.avatar} />
-                    <View style={styles.icon}>
-                        <Image source={require('../../assets/plus.png')} style={styles.avatar1} />
+                    {
+                        image ?
+                            <Image source={{ uri: image }} style={styles.avatarStyle} />
+                            :
+                            <Image source={require('../../assets/avatar.png')} style={styles.avatar} />
+                    }
+                    <TouchableOpacity onPress={() => launchGallery()} style={styles.icon}>
+                        {
+                            image ?
+                                <Icon name="edit" color="white" size={15} />
+                                :
+                                <Image source={require('../../assets/plus.png')} style={styles.avatar1} />
+                        }
+                    </TouchableOpacity>
+                </View>
+                <Text style={styles.text}>Date Of Birth</Text>
+                <View style={styles.outerView}>
+                    <TouchableOpacity
+                        style={styles.dropDown}
+                        onPress={() => {
+                            setShowDatePicker(!showDatePicker)
+                            console.log("showDatePicker: ", showDatePicker)
+                        }}
+                    >
+                        {date != undefined && date != '' ? (
 
+                            <Text style={styles.innertext}>{moment(date).format('M / DD / YYYY')}</Text>
+                        ) : (
+                            <Text style={styles.innertext}>- / -- / ----</Text>
+                        )}
+                        <Calendar
+                            name="calendar"
+                            color="grey" size={15}
+                        />
+                    </TouchableOpacity>
+                    <DateTimePickerModal
+                        isVisible={showDatePicker}
+                        onConfirm={(date) => handleConfirm(date)}
+                        onCancel={() => hideDatePicker}
+                    />
+                </View>
+                {submit == true && date == "" && (
+                    <Text style={styles.errorStyle}>Please select your date of birth</Text>
+                )}
+
+                <Text style={styles.text}>Country</Text>
+                <View style={styles.outerView}>
+                    <TouchableOpacity
+                        style={styles.dropDown}
+                        onPress={() => {
+                            setCountryModal(!countryModal)
+                            console.log("countryModal : ", countryModal)
+                        }}
+                    >
+                        {country != undefined && country != '' ? (
+                            // setCheckInstructorTypes(false)
+                            <Text style={styles.innertext}>{country}</Text>
+                        ) : (
+                            <Text style={styles.innertext}>Select</Text>
+                        )}
+                        <Image
+                            source={require("../../assets/drop-down.png")}
+                            style={styles.dropImage}
+                        />
+                    </TouchableOpacity>
+                </View>
+                {submit == true && country == '' && (
+                    <Text style={styles.errorStyle}>Please select a Country</Text>
+                )}
+                <Input
+                    full={true}
+                    text={"Address"}
+                    value={address}
+                    onChangeText={(value) => {
+                        setAddress(value);
+                    }}
+                />
+                {submit == true && address == "" && (
+                    <Text style={styles.errorStyle}>
+                        Address cannot be empty
+                    </Text>
+                )}
+                <Text style={styles.text}>Phone</Text>
+
+                <View style={styles.outerView}>
+                    <View style={styles.dropDown}>
+                        <PhoneInput
+                            ref={phoneRef}
+                            onPressFlag={() => setCountryModal(!countryModal)}
+                            autoFormat={true}
+                            allowZeroAfterCountryCode={false}
+                            textStyle={{
+                                marginTop: 2,
+                                lineHeight: 25,
+                                // fontFamily: 'Nunito-Regular',
+                                fontSize: 14,
+                                color: 'black',
+                            }}
+                            returnKeyType="next"
+                            // blur={() => this.disabled()}
+                            onChangePhoneNumber={(phonenumber) => { console.log(phonenumber); setPhoneNumber(phonenumber) }}
+                            value={phoneNumber}
+                            textProps={{
+                                placeholder: 'Phone Number',
+                                placeholderTextColor: "grey",
+                            }}
+                        />
                     </View>
                 </View>
-                <Text style={styles.text}>Athlete Sport</Text>
+                {submit == true && phoneNumber == "" && (
+                    <Text style={styles.errorStyle}>
+                        Address cannot be empty
+                    </Text>
+                )}
+
+
+                {/* <Text style={styles.text}>Athlete Sport</Text>
                 <View style={styles.outerView}>
                     <View style={[styles.innerView, { borderColor: checked == 'baseBall' ? Colors.blackColor : Colors.textColor }]}>
                         <RadioButton
@@ -65,136 +342,123 @@ const CompleteProfile = (props) => {
                 </View>
                 <Text style={[styles.text, { marginTop: 15 }]}>Skill Level</Text>
                 <View style={styles.outerView}>
-                    <View style={[styles.innerView1,{width:'35%'}]}>
-                            <RadioButton
-                                size={20}
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="recreational"
-                                status={skillLevel === 'recreational' ? 'checked' : 'unchecked'}
-                                onPress={() => setSkillLevel('recreational')}
-                            />
+                    <View style={[styles.innerView1, { width: '35%' }]}>
+                        <RadioButton
+                            size={20}
+                            color={Colors.blackColor}
+                            uncheckedColor={Colors.blackColor}
+                            value="recreational"
+                            status={skillLevel === 'recreational' ? 'checked' : 'unchecked'}
+                            onPress={() => setSkillLevel('recreational')}
+                        />
                         <Text style={styles.innertext}>Recreational</Text>
 
                     </View>
-                    <View style={[styles.innerView1,{width:'28%'}]}>
-                            <RadioButton
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="travel"
-                                status={skillLevel === 'travel' ? 'checked' : 'unchecked'}
-                                onPress={() => setSkillLevel('travel')}
-                            />
+                    <View style={[styles.innerView1, { width: '28%' }]}>
+                        <RadioButton
+                            color={Colors.blackColor}
+                            uncheckedColor={Colors.blackColor}
+                            value="travel"
+                            status={skillLevel === 'travel' ? 'checked' : 'unchecked'}
+                            onPress={() => setSkillLevel('travel')}
+                        />
                         <Text style={styles.innertext}>Travel</Text>
                     </View>
                     <View style={[styles.innerView1]}>
-                            <RadioButton
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="collegiate"
-                                status={skillLevel === 'collegiate' ? 'checked' : 'unchecked'}
-                                onPress={() => setSkillLevel('collegiate')}
-                            />
+                        <RadioButton
+                            color={Colors.blackColor}
+                            uncheckedColor={Colors.blackColor}
+                            value="collegiate"
+                            status={skillLevel === 'collegiate' ? 'checked' : 'unchecked'}
+                            onPress={() => setSkillLevel('collegiate')}
+                        />
                         <Text style={styles.innertext}>Collegiate</Text>
                     </View>
                 </View>
                 <View style={[styles.outerView1]}>
                     <View style={[styles.innerView1]}>
-                            <RadioButton
-                                size={20}
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="division"
-                                status={skillLevel === 'division' ? 'checked' : 'unchecked'}
-                                onPress={() => setSkillLevel('division')}
-                            />
+                        <RadioButton
+                            size={20}
+                            color={Colors.blackColor}
+                            uncheckedColor={Colors.blackColor}
+                            value="division"
+                            status={skillLevel === 'division' ? 'checked' : 'unchecked'}
+                            onPress={() => setSkillLevel('division')}
+                        />
                         <Text style={styles.innertext}>Division-1</Text>
 
                     </View>
-                    <View style={[styles.innerView1,{marginLeft:10}]}>
-                            <RadioButton
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="professional"
-                                status={skillLevel === 'professional' ? 'checked' : 'unchecked'}
-                                onPress={() => setSkillLevel('professional')}
-                            />
+                    <View style={[styles.innerView1, { marginLeft: 10 }]}>
+                        <RadioButton
+                            color={Colors.blackColor}
+                            uncheckedColor={Colors.blackColor}
+                            value="professional"
+                            status={skillLevel === 'professional' ? 'checked' : 'unchecked'}
+                            onPress={() => setSkillLevel('professional')}
+                        />
                         <Text style={styles.innertext}>professional</Text>
                     </View>
-                    </View>
-                    <Text style={[styles.text, { marginTop: 15 }]}>Athlete Age Group</Text>
-                    <View style={styles.outerView}>
-                    <View style={[styles.innerView2]}>
-                            <RadioButton
-                                size={20}
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="9"
-                                status={ageGroup === '9' ? 'checked' : 'unchecked'}
-                                onPress={() => setAgeGroup('9')}
-                            />
-                        <Text style={styles.innertext}>Under 9</Text>
-
-                    </View>
-                    <View style={[styles.innerView2]}>
-                            <RadioButton
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="10"
-                                status={ageGroup === '10' ? 'checked' : 'unchecked'}
-                                onPress={() => setAgeGroup('10')}
-                            />
-                        <Text style={styles.innertext}>10/11u</Text>
-                    </View>
-                    <View style={[styles.innerView2]}>
-                            <RadioButton
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="12"
-                                status={ageGroup === '12' ? 'checked' : 'unchecked'}
-                                onPress={() => setAgeGroup('12')}
-                            />
-                        <Text style={styles.innertext}>12u</Text>
-                    </View>
-                </View>
-                <View style={styles.outerView1}>
-                    <View style={[styles.innerView2]}>
-                            <RadioButton
-                                size={20}
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="13"
-                                status={ageGroup === '13' ? 'checked' : 'unchecked'}
-                                onPress={() => setAgeGroup('13')}
-                            />
-                        <Text style={styles.innertext}>13-15</Text>
-
-                    </View>
-                    <View style={[styles.innerView2,{marginLeft:10}]}>
-                            <RadioButton
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="16"
-                                status={ageGroup === '16' ? 'checked' : 'unchecked'}
-                                onPress={() => setAgeGroup('16')}
-                            />
-                        <Text style={styles.innertext}>16-17u</Text>
-                    </View>
-                    <View style={[styles.innerView1,{marginLeft:10}]}>
-                            <RadioButton
-                                color={Colors.blackColor}
-                                uncheckedColor={Colors.blackColor}
-                                value="18"
-                                status={ageGroup === '18' ? 'checked' : 'unchecked'}
-                                onPress={() => setAgeGroup('18')}
-                            />
-                        <Text style={styles.innertext}>18+</Text>
-                    </View>
-                </View>
-                <Button text={'Register'} onPress={()=>{setModalVisible(!modalVisible)}} />
-                <View style={{marhinBottom:20}}></View>
+                </View> */}
+                <Text style={[styles.text, { marginTop: 15 }]}> Age Group</Text>
+                <FlatList
+                    data={arr}
+                    // showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginBottom: "5%",
+                        width: width,
+                    }}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item, index }) => {
+                        return (
+                            <View style={styles.outerView}>
+                                <View style={[styles.innerView1]}>
+                                    <RadioButton
+                                        color={Colors.blackColor}
+                                        size={10}
+                                        uncheckedColor={Colors.blackColor}
+                                        status={item.flag ? "checked" : "unchecked"}
+                                        onPress={() => {
+                                            // let ageArr = [...ageGroup];
+                                            let array = arr;
+                                            array[prev].flag = false;
+                                            array[index].flag = true;
+                                            setArr(arr);
+                                            // ageArr.push({ ageGroup: item.age })
+                                            // setAge(ageArr)
+                                            setAgeGroup(item.age);
+                                            setPrev(index);
+                                        }}
+                                    />
+                                    <Text style={styles.innertext}>{item.age}</Text>
+                                </View>
+                            </View>
+                        );
+                    }}
+                />
+                {checkAgeGroup == true && (
+                    <Text style={styles.errorStyle}>  Please select age group</Text>
+                )}
+                <Button text={'Register'} onPress={() => {
+                    checkNetwork()
+                    //  setModalVisible(!modalVisible)
+                }} />
+                <View style={{ marhinBottom: 20 }}></View>
             </ScrollView>
-            <RegisterationModal modalVisible={modalVisible} setModalVisible={setModalVisible} navigation={props.navigation} />
+            <RegisterationModal modalVisible={modalVisible} setModalVisible={setModalVisible} navigation={navigation} />
+            <CountryPicker
+                // countryCodes={['PK']}
+                theme={styles.themeText}
+                withFilter={true}
+                visible={countryModal}
+                onSelect={(country) => onSelect(country)}
+                withAlphaFilter={true}
+                withCountryNameButton={true}
+                renderFlagButton={_flagButton}
+            >
+                <View />
+            </CountryPicker>
         </View>
     );
 };
@@ -227,6 +491,11 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginVertical: 20
     },
+    avatarStyle: {
+        height: 120,
+        width: 120,
+        borderRadius: 120,
+    },
     avatar:
     {
         height: 30,
@@ -242,7 +511,7 @@ const styles = StyleSheet.create({
         height: 25,
         width: 25,
         borderRadius: 25,
-        backgroundColor: 'red',
+        backgroundColor: Colors.buttonColor,
         position: 'absolute',
         alignSelf: 'flex-end',
         top: 80,
@@ -286,17 +555,19 @@ const styles = StyleSheet.create({
         fontFamily: FontFamily.helveticaBold,
         fontSize: 12
     },
-   
-    innerView1:
-    {
+
+    innerView1: {
         height: 40,
         // width: '33%',
         borderWidth: 1,
         borderRadius: 10,
+        marginRight: "3%",
         borderColor: Colors.textColor,
+        // borderColor: 'red',
         paddingRight: 10,
-        alignItems: 'center',
-        flexDirection: 'row'
+        alignItems: "center",
+        flexDirection: "row",
+        // backgroundColor: 'red',
     },
     innerView2:
     {
@@ -309,7 +580,28 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row'
     },
-  
+    dropDown: {
+        height: 40,
+        width: "100%",
+        borderWidth: 1,
+        borderColor: Colors.textColor,
+        borderRadius: 10,
+        // marginTop: 10,\
+        marginBottom: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: 10,
+    },
+    dropImage: {
+        height: 14,
+        width: 14,
+    },
+    errorStyle: {
+        fontSize: 12,
+        color: "red",
+        paddingLeft: 0,
+    },
 
 
 });

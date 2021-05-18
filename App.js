@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import type {Node} from 'react';
+import type { Node } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -16,6 +16,7 @@ import {
   Text,
   useColorScheme,
   View,
+  LogBox
 } from 'react-native';
 
 import {
@@ -33,6 +34,7 @@ const store = createStore();
 
 
 const App: () => Node = () => {
+  LogBox.ignoreAllLogs(true);
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
