@@ -36,7 +36,7 @@ const CompleteProfile = ({ navigation, route }) => {
     // console.log("data is", data);
     const [checked, setChecked] = useState('baseBall')
     const [skillLevel, setSkillLevel] = useState('recreational')
-    const [ageGroup, setAgeGroup] = useState('')
+    const [ageGroup, setAgeGroup] = useState('Under-9')
     const [modalVisible, setModalVisible] = useState(false)
     const [date, setDate] = useState("")
     const [showDatePicker, setShowDatePicker] = useState(false)
@@ -111,6 +111,8 @@ const CompleteProfile = ({ navigation, route }) => {
 
 
     const checkNetwork = async () => {
+        await setSubmit(true)
+        console.log(submit)
         console.log("internet called");
         try {
             let state = await NetInfo.fetch();
@@ -128,14 +130,11 @@ const CompleteProfile = ({ navigation, route }) => {
     };
 
     const checkValidations = () => {
-        if (!submit) {
+        if (submit == false) {
             setSubmit(true);
             console.log(submit)
         } else if (ageGroup == "") {
             setCheckAgeGroup(true);
-        } else if (!submit) {
-            setSubmit(true);
-            console.log(submit)
         }
         else {
             getAtheleteDetails();
@@ -163,6 +162,7 @@ const CompleteProfile = ({ navigation, route }) => {
                 if (response.data.success != undefined && response.data.success == true) {
                     console.log("response", response);
                     setModalVisible(!modalVisible)
+
                     // navigation.navigate("EmailSent");
                 } else {
                     console.log("error in service");
@@ -170,6 +170,7 @@ const CompleteProfile = ({ navigation, route }) => {
             })
             .catch((error) => {
                 alert(error);
+                setSubmit(false)
                 console.log(error);
             })
     };
