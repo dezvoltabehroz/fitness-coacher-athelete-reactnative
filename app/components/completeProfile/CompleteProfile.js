@@ -132,7 +132,7 @@ const CompleteProfile = ({ navigation, route }) => {
     };
 
     const checkValidations = () => {
-        if (ageGroup && submit && country && address && phoneNumber && isPhoneValid(phoneNumber)) {
+        if (ageGroup && submit && country && address && phoneNumber && date && isPhoneValid(phoneNumber)) {
             getAtheleteDetails();
         } else {
             setSubmit(true);
@@ -418,12 +418,7 @@ const CompleteProfile = ({ navigation, route }) => {
                 <FlatList
                     data={arr}
                     // showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{
-                        flexDirection: 'row',
-                        flexWrap: 'wrap',
-                        marginBottom: "5%",
-                        width: width,
-                    }}
+                    contentContainerStyle={styles.contentContainerStyle}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({ item, index }) => {
                         return (
@@ -489,6 +484,12 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 35,
         marginTop: '30%',
         paddingHorizontal: 20
+    },
+    contentContainerStyle: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginBottom: "5%",
+        width: width,
     },
     profile:
     {

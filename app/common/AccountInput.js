@@ -18,14 +18,14 @@ import { Colors } from '../style/colors'
 const height = Dimensions.get('window').height
 import {FontFamily} from '../style/typograpy'
 
-const Input = ({text,placeholder,placeholderTextColor,secureTextEntry}) => {
+const Input = ({text,placeholder,placeholderTextColor,secureTextEntry,editable}) => {
     useEffect(() => {
 
     })
     return (
         <View style={styles.container}>
             <Text style={styles.text}>{text}</Text>
-          <TextInput secureTextEntry={secureTextEntry} style={styles.input} placeholder={placeholder} placeholderTextColor={placeholderTextColor}/>
+          <TextInput editable={editable} secureTextEntry={secureTextEntry} style={styles.input} placeholder={placeholder} placeholderTextColor={placeholderTextColor}/>
         </View>
     );
 };
