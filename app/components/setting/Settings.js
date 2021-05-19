@@ -8,14 +8,14 @@ import {
   StatusBar,
   ImageBackground,
   Image,
-  AsyncStorage,
   NativeModules,
   Platform,
   Dimensions,
   TouchableOpacity
 } from 'react-native';
 import { Colors } from '../../style/colors'
-import { FontFamily } from '../../style/typograpy'
+import { FontFamily } from '../../style/typograpy';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const height = Dimensions.get('window').height
 const SettingsScreen = (props) => {
 
@@ -30,37 +30,40 @@ const SettingsScreen = (props) => {
         <Text style={styles.text}>SETTINGS</Text>
       </View> */}
       <ScrollView style={styles.bottom}>
-        <TouchableOpacity style={[styles.outerView,{marginTop:40}]}  onPress={()=>{props.navigation.navigate('NotificationsSettings')}} >
+        <TouchableOpacity style={[styles.outerView, { marginTop: 40 }]} onPress={() => { props.navigation.navigate('NotificationsSettings') }} >
           <View style={styles.left}>
             <Image source={require('../../assets/notification.png')} style={styles.image} />
           </View>
           <Text style={styles.text1}>Notifications Settings</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.outerView,{marginTop:40}]} onPress={()=>{props.navigation.navigate('AccountSettings')}}>
+        <TouchableOpacity style={[styles.outerView, { marginTop: 40 }]} onPress={() => { props.navigation.navigate('AccountSettings') }}>
           <View style={styles.left}>
             <Image source={require('../../assets/user.png')} style={styles.image} />
           </View>
           <Text style={styles.text1}>Account Settings</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.outerView,{marginTop:40}]} onPress={()=>{props.navigation.navigate('Billings')}}>
+        <TouchableOpacity style={[styles.outerView, { marginTop: 40 }]} onPress={() => { props.navigation.navigate('Billings') }}>
           <View style={styles.left}>
             <Image source={require('../../assets/payment.png')} style={styles.image} />
           </View>
           <Text style={styles.text1}>My Billings</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.outerView,{marginTop:40}]} >
+        <TouchableOpacity style={[styles.outerView, { marginTop: 40 }]} >
           <View style={styles.left}>
             <Image source={require('../../assets/terms.png')} style={styles.image} />
           </View>
           <Text style={styles.text1}>Term of Services</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.outerView,{marginTop:40}]} >
+        <TouchableOpacity style={[styles.outerView, { marginTop: 40 }]} >
           <View style={styles.left}>
             <Image source={require('../../assets/privacy.png')} style={styles.image} />
           </View>
           <Text style={styles.text1}>Privacy Policy</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.outerView,{marginTop:40}]} >
+        <TouchableOpacity onPress={async () => {
+          await AsyncStorage.removeItem('Token');
+          props.navigation.replace('Login')
+        }} style={[styles.outerView, { marginTop: 40 }]} >
           <View style={styles.left}>
             <Image source={require('../../assets/logout.png')} style={styles.image} />
           </View>
@@ -107,23 +110,23 @@ const styles = StyleSheet.create({
   },
   outerView:
   {
-    flexDirection:'row',
-    alignItems:'center',
-    marginTop:30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 30,
   },
   left:
   {
-    height:30,
-    width:30,
-    borderRadius:5,
-    alignItems:'center',
-    justifyContent:'center',
-    backgroundColor:Colors.textColor 
+    height: 30,
+    width: 30,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.textColor
   },
   image:
   {
-    height:17,
-    width:17
+    height: 17,
+    width: 17
   }
 
 });

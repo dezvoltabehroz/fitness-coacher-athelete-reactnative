@@ -29,6 +29,7 @@ import { AuthServices } from '../../services';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Calendar from 'react-native-vector-icons/Feather';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 const height = Dimensions.get('window').height
 const width = Dimensions.get('window').width
 const CompleteProfile = ({ navigation, route }) => {
@@ -36,7 +37,7 @@ const CompleteProfile = ({ navigation, route }) => {
     // console.log("data is", data);
     const [checked, setChecked] = useState('baseBall')
     const [skillLevel, setSkillLevel] = useState('recreational')
-    const [ageGroup, setAgeGroup] = useState('Under-9')
+    const [ageGroup, setAgeGroup] = useState('')
     const [modalVisible, setModalVisible] = useState(false)
     const [date, setDate] = useState("")
     const [showDatePicker, setShowDatePicker] = useState(false)
@@ -76,6 +77,7 @@ const CompleteProfile = ({ navigation, route }) => {
     const onSelect = async (country) => {
         console.log(country)
         await setCountry(country.name);
+        await setPhoneNumber(`+${country.callingCode[0]}`);
 
         await setCountryModal(false)
 
@@ -130,19 +132,20 @@ const CompleteProfile = ({ navigation, route }) => {
     };
 
     const checkValidations = () => {
-        if (submit == false) {
+        if (ageGroup && submit && country && address && phoneNumber && isPhoneValid(phoneNumber)) {
+            getAtheleteDetails();
+        } else {
             setSubmit(true);
             console.log(submit)
-        } else if (ageGroup == "") {
-            setCheckAgeGroup(true);
-        }
-        else {
-            getAtheleteDetails();
         }
     };
 
+    const isPhoneValid = (phone) => {
+        return /^\+[0-9]{10,13}$/.test(phone)
+    }
+
     const getAtheleteDetails = async () => {
-        let userData = JSON.stringify({
+        let userData = {
             firstName: route.params.firstName,
             lastName: route.params.lastName,
             email: route.params.email,
@@ -153,7 +156,7 @@ const CompleteProfile = ({ navigation, route }) => {
             role: 'athlete',
             country: country,
             ageGroup: ageGroup,
-        });
+        };
         console.log("userdata is", userData);
         // navigation.navigate("EmailSent");
 
@@ -174,6 +177,7 @@ const CompleteProfile = ({ navigation, route }) => {
                 console.log(error);
             })
     };
+
     const launchGallery = () => {
         launchImageLibrary(
             {
@@ -283,7 +287,7 @@ const CompleteProfile = ({ navigation, route }) => {
                         Address cannot be empty
                     </Text>
                 )}
-                <Text style={styles.text}>Phone</Text>
+                {/* <Text style={styles.text}>Phone</Text>
 
                 <View style={styles.outerView}>
                     <View style={styles.dropDown}>
@@ -309,12 +313,22 @@ const CompleteProfile = ({ navigation, route }) => {
                             }}
                         />
                     </View>
-                </View>
-                {submit == true && phoneNumber == "" && (
-                    <Text style={styles.errorStyle}>
-                        Address cannot be empty
-                    </Text>
-                )}
+                </View> */}
+                <Input
+                    full={true}
+                    text={"Phone"}
+                    value={phoneNumber}
+                    onChangeText={(value) => {
+                        setPhoneNumber(value);
+                    }}
+                />
+                {
+                    submit && phoneNumber == "" ? <Text style={styles.errorStyle}> Phonenumber cannot be empty </Text> : null
+                }
+                {
+                    submit && phoneNumber.length && !isPhoneValid(phoneNumber) ? <Text style={[styles.errorStyle]}>Phone number is incomplete </Text> : null
+                }
+
 
 
                 {/* <Text style={styles.text}>Athlete Sport</Text>
@@ -415,30 +429,26 @@ const CompleteProfile = ({ navigation, route }) => {
                         return (
                             <View style={styles.outerView}>
                                 <View style={[styles.innerView1]}>
-                                    <RadioButton
-                                        color={Colors.blackColor}
-                                        size={10}
-                                        uncheckedColor={Colors.blackColor}
-                                        status={item.flag ? "checked" : "unchecked"}
-                                        onPress={() => {
-                                            // let ageArr = [...ageGroup];
-                                            let array = arr;
-                                            array[prev].flag = false;
-                                            array[index].flag = true;
-                                            setArr(arr);
-                                            // ageArr.push({ ageGroup: item.age })
-                                            // setAge(ageArr)
-                                            setAgeGroup(item.age);
-                                            setPrev(index);
-                                        }}
-                                    />
+                                    <MaterialIcons onPress={() => {
+                                        // let ageArr = [...ageGroup];
+                                        let array = arr;
+                                        array[prev].flag = false;
+                                        array[index].flag = true;
+                                        setArr(arr);
+                                        // ageArr.push({ ageGroup: item.age })
+                                        // setAge(ageArr)
+                                        setAgeGroup(item.age);
+                                        setPrev(index);
+                                    }}
+                                        size={20}
+                                        name={item.flag && ageGroup == item.age ? "check-box" : "check-box-outline-blank"} />
                                     <Text style={styles.innertext}>{item.age}</Text>
                                 </View>
                             </View>
                         );
                     }}
                 />
-                {checkAgeGroup == true && (
+                {submit == true && ageGroup == "" && (
                     <Text style={styles.errorStyle}>  Please select age group</Text>
                 )}
                 <Button text={'Register'} onPress={() => {
@@ -566,6 +576,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.textColor,
         // borderColor: 'red',
         paddingRight: 10,
+        paddingHorizontal: 5,
         alignItems: "center",
         flexDirection: "row",
         // backgroundColor: 'red',

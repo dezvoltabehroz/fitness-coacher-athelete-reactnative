@@ -85,7 +85,11 @@ const SplashScreen = (props) => {
         };
         AuthServices.userLogin(loginDetails)
             .then((res) => {
-                console.log("res :", res)
+                if (res.status == 200) {
+                    AsyncStorage.setItem('Token', JSON.stringify(res.data.userData.tokenInfo))
+                    props.navigation.replace("TabContainer");
+                    console.log("res :", res.data.userData.tokenInfo);
+                  }
             })
             .catch((err) => { setLoading(false); console.log(err) })
     };
@@ -226,7 +230,7 @@ const SplashScreen = (props) => {
                                 )}
                                 <View style={{ paddingHorizontal: 20 }}>
 
-                                    <Button text={'Login'} onPress={() => { props.navigation.navigate('TabContainer') }} />
+                                    <Button loading={loading} text={'Login'} onPress={() => loginValidations()} />
                                 </View>
                                 <Link style={styles.linkText} to="/ForgotPassword">
                                     Forgot your password?

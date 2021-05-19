@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
@@ -8,18 +9,26 @@ import {
   StatusBar,
   ImageBackground,
   Image,
-  AsyncStorage,
   NativeModules,
   Platform,
   Dimensions
 } from 'react-native';
 import {Colors} from '../../style/colors'
+
 const height=Dimensions.get('window').height
 const SplashScreen = (props) => {
 useEffect(()=>{
-  setTimeout(()=>{
-props.navigation.navigate('Login')
-  },(2000))
+  setTimeout(async () => {
+    let token = await AsyncStorage.getItem('Token');
+    let userToken = JSON.parse(token)
+    console.log(userToken)
+    if (userToken) {
+      props.navigation.replace('TabContainer');
+    } else {
+      props.navigation.replace('Login');
+    }
+
+  }, 2000);
 
 })
   return (
