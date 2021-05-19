@@ -26,6 +26,9 @@ import NetInfo from "@react-native-community/netinfo";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthServices } from "../../services";
+import { authActions } from '../../redux/actions/auth';
+import { connect } from 'react-redux';
+import { bindActionCreators } from "redux";
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 var keyheight = ''
@@ -84,14 +87,16 @@ const SplashScreen = (props) => {
             password: loginPassword,
         };
         AuthServices.userLogin(loginDetails)
-            .then((res) => {
-                if (res.status == 200) {
-                    AsyncStorage.setItem('Token', JSON.stringify(res.data.userData.tokenInfo))
-                    props.navigation.replace("TabContainer");
-                    console.log("res :", res.data.userData.tokenInfo);
-                  }
-            })
-            .catch((err) => { setLoading(false); console.log(err) })
+        .then(async (res) => {
+          if (res.status == 200) {
+            await AsyncStorage.setItem('Token', JSON.stringify(res.data.userData.tokenInfo))
+            props.authActions.getUserProfile(res.data.userData.tokenInfo, props.navigation.replace);
+            // props.navigation.replace("TabContainer");
+            console.log("res :", res.data.userData.tokenInfo);
+          }
+  
+        })
+        .catch((err) => { setLoading(false); console.log(err) })
     };
 
     const didShow = (height) => {
@@ -410,5 +415,18 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
 });
+const mapStateToProps = (state) => ({
+    user: state.authReducer,
 
-export default SplashScreen;
+});
+
+const mapDispatchToProps = dispatch => {
+    return {
+        authActions: bindActionCreators(authActions, dispatch)
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(SplashScreen);

@@ -27,6 +27,9 @@ import PhoneInput from 'react-native-phone-input';
 import moment from 'moment';
 import NetInfo from "@react-native-community/netinfo";
 import { AuthServices } from '../../services';
+import { connect } from 'react-redux';
+import { authActions } from '../../redux/actions/auth';
+import { bindActionCreators } from "redux";
 import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Calendar from 'react-native-vector-icons/Feather';
@@ -34,14 +37,17 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
 const AccountSettingsScreen = (props) => {
+  const [first_name, setFirstname] = useState(props?.user?.firstName);
+  const [last_name, setLastname] = useState(props?.user?.lastName);
+  const [email, setEmail] = useState(props?.user?.email)
   const [ageGroup, setAgeGroup] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
-  const [date, setDate] = useState("")
+  const [date, setDate] = useState(props?.user?.dob)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [countryModal, setCountryModal] = useState(false);
-  const [country, setCountry] = useState("")
-  const [address, setAddress] = useState("")
-  const [phoneNumber, setPhoneNumber] = useState("")
+  const [country, setCountry] = useState(props?.user?.country)
+  const [phoneNumber, setPhoneNumber] = useState(props?.user?.phone);
+  const [address, setAddress] = useState(props?.user?.address);
   const [submit, setSubmit] = useState(false)
   const [checkAgeGroup, setCheckAgeGroup] = useState(false);
   const [image, setImage] = useState('')
@@ -129,7 +135,9 @@ const AccountSettingsScreen = (props) => {
   };
 
   const checkValidations = () => {
-    if (ageGroup && submit && country && address && phoneNumber && date && isPhoneValid(phoneNumber)) {
+     setSubmit(true)
+     console.log(submit)
+    if (ageGroup && submit && country && address && phoneNumber && date && isPhoneValid(phoneNumber) && first_name && last_name) {
       getAtheleteDetails();
     } else {
       setSubmit(true);
@@ -143,10 +151,9 @@ const AccountSettingsScreen = (props) => {
 
   const getAtheleteDetails = async () => {
     let userData = {
-      firstName: route.params.firstName,
-      lastName: route.params.lastName,
-      email: route.params.email,
-      password: route.params.password,
+      firstName: first_name,
+      lastName: last_name,
+      email: props?.user?.email,
       phone: phoneNumber,
       address: address,
       dob: moment(date).format('YYYY-MM-DD'),
@@ -157,7 +164,7 @@ const AccountSettingsScreen = (props) => {
     console.log("userdata is", userData);
     // navigation.navigate("EmailSent");
 
-    AuthServices.userRegister(userData)
+    AuthServices.updateProfile(props?.user?.id, userData, props?.token)
       .then(response => {
         if (response.data.success != undefined && response.data.success == true) {
           console.log("response", response);
@@ -170,7 +177,6 @@ const AccountSettingsScreen = (props) => {
       })
       .catch((error) => {
         alert(error);
-        setSubmit(false)
         console.log(error);
       })
   };
@@ -209,8 +215,15 @@ const AccountSettingsScreen = (props) => {
             <Image source={require('../../assets/pen.png')} style={styles.pen} />
           </TouchableOpacity>
         </View>
-        <AccountInput text={'Name'} />
-        <AccountInput editable={false} text={'Email-Address'} />
+        <AccountInput text={'First Name'} placeholder="" value={first_name} onChangeText={(val) => setFirstname(val)} />
+        {submit == true && first_name == "" && (
+          <Text style={styles.errorStyle}>First Name canot be empty</Text>
+        )}
+        <AccountInput text={'Last Name'} placeholder="" value={last_name} onChangeText={(val) => setLastname(val)} />
+        {submit == true && last_name == "" && (
+          <Text style={styles.errorStyle}>Last Name canot be empty</Text>
+        )}
+        <AccountInput editable={false} value={email} text={'Email Address'} />
         <Text style={styles.inputText}>Password</Text>
         <View style={styles.input}>
           <Text style={styles.passwordText}>*********</Text>
@@ -289,6 +302,7 @@ const AccountSettingsScreen = (props) => {
         <Input
           full={true}
           text={"Phone"}
+          keyboardType={"number-pad"}
           value={phoneNumber}
           onChangeText={(value) => {
             setPhoneNumber(value);
@@ -335,9 +349,20 @@ const AccountSettingsScreen = (props) => {
         {submit == true && ageGroup == "" && (
           <Text style={styles.errorStyle}>  Please select age group</Text>
         )}
-        <Button text={'Update'} onPress={() => { setModalVisible(!modalVisible) }} />
+        <Button text={'Update'} onPress={() => { checkNetwork() }} />
         <View style={{ marginTop: 20 }}></View>
       </ScrollView>
+      <CountryPicker
+        theme={styles.themeText}
+        withFilter={true}
+        visible={countryModal}
+        onSelect={(country) => onSelect(country)}
+        withAlphaFilter={true}
+        withCountryNameButton={true}
+        renderFlagButton={_flagButton}
+      >
+        <View />
+      </CountryPicker>
       <AccountModal modalVisible={modalVisible} setModalVisible={setModalVisible} />
     </View>
   );
@@ -442,6 +467,7 @@ const styles = StyleSheet.create({
     fontSize: 12
   },
   changeTextStyle: {
+    marginRight: 10,
     color: "#60A7EE",
     fontFamily: FontFamily.helveticaBold,
     fontSize: 12
@@ -484,16 +510,16 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
   },
 
-  bottom:
-  {
-    height: '90%',
-    width: '100%',
-    backgroundColor: Colors.whiteColor,
-    borderTopRightRadius: 35,
-    borderTopLeftRadius: 35,
-    marginTop: '22%',
-    paddingHorizontal: 20
-  },
+  // bottom:
+  // {
+  //   height: '90%',
+  //   width: '100%',
+  //   backgroundColor: Colors.whiteColor,
+  //   borderTopRightRadius: 35,
+  //   borderTopLeftRadius: 35,
+  //   marginTop: '22%',
+  //   paddingHorizontal: 20
+  // },
   outerView:
   {
     flexDirection: 'row',
@@ -534,7 +560,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    left: 180,
+    // left: 180,
+    left: '56%',
     top: 90
   },
   pen:
@@ -623,4 +650,17 @@ const styles = StyleSheet.create({
 
 });
 
-export default AccountSettingsScreen;
+const mapStateToProps = (state) => {
+  return {
+    user: state.authReducer.userData || {},
+    token: state.authReducer.userToken
+  };
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    authActions: bindActionCreators(authActions, dispatch)
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(AccountSettingsScreen);
+

@@ -17,6 +17,12 @@ const Api = {
             password: userData.password
         }, config)
     },
+    getUserProfile: function (token) {
+        return axiosInstance.get('user/current', configToken(token))
+    },
+    updateProfile: function (id, userData, token) {
+        return axiosInstance.put(`athlete/update/${id}`, userData, configToken(token))
+    },
     userRegister: function (userData) {
         return axiosInstance.post('athlete/registerAthlete', userData, config)
     },
