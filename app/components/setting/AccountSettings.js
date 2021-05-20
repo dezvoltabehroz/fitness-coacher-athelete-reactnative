@@ -228,7 +228,7 @@ const AccountSettingsScreen = (props) => {
         <Text style={styles.inputText}>Password</Text>
         <View style={styles.input}>
           <Text style={styles.passwordText}>*********</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => props.navigation.navigate('ChangePassword')}>
             <Text style={styles.changeTextStyle} >Change</Text>
           </TouchableOpacity>
         </View>
