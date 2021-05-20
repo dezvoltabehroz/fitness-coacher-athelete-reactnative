@@ -4,7 +4,7 @@ import {
     LOADING_SUCCESS
 } from '../types';
 import { AuthServices, RegisterUser } from '../../services';
-import { Alert, Linking, Platform } from 'react-native';
+import { Alert, Linking, Platform, ToastAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const setUserProfile = (userData, navigate) => {
@@ -70,7 +70,7 @@ const userLogin = (userData, navigate) => {
                 else {
                     dispatch({ type: LOADING_SUCCESS, loading: !loading })
                     console.log(responseData.data.message)
-                    Alert.alert(responseData.data.message)
+                    ToastAndroid.show(`${responseData.data.message}`, ToastAndroid.LONG)
                 }
             })
             .catch(err => {

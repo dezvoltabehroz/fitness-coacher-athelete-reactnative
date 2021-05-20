@@ -10,7 +10,8 @@ import {
     Image,
     NativeModules,
     Platform,
-    Dimensions
+    Dimensions,
+    ToastAndroid
 } from 'react-native';
 import { Colors } from '../../style/colors'
 import { Container, Header, Content, Tab, Tabs } from 'native-base';
@@ -124,7 +125,8 @@ const SplashScreen = (props) => {
             if (state.isConnected == true) {
                 checkValidations();
             } else {
-                alert("Please check your internet connection and try again");
+                ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG) 
+                
             }
         } catch (error) {
             console.log(error);
@@ -144,15 +146,15 @@ const SplashScreen = (props) => {
         } else if (password == "") {
             setCheckConfirmPassword(true);
         } else if (String(first_name).length <= 2) {
-            alert("firstname must be atleast 3 characters");
+            ToastAndroid.show(`Firstname must be atleast 3 characters`, ToastAndroid.LONG) 
         } else if (String(last_name).length <= 2) {
-            alert("lastname must be atleast 3 characters");
+            ToastAndroid.show(`Lastname must be atleast 3 characters`, ToastAndroid.LONG) 
         } else if (!validateEmail()) {
-            alert("Please enter a proper email");
+            ToastAndroid.show(`Please enter a proper email`, ToastAndroid.LONG) 
         } else if (String(password).length <= 7) {
-            alert("Password must be between 8 to 16 characters");
+            ToastAndroid.show(`Password must be between 8 to 16 characters`, ToastAndroid.LONG) 
         } else if (confirmPassword != password) {
-            alert("Password Mismatch");
+            ToastAndroid.show(`Password Mismatch`, ToastAndroid.LONG) 
         } else {
             navigateToNextScreen();
         }

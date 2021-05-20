@@ -12,7 +12,8 @@ import {
     NativeModules,
     Platform,
     Dimensions,
-    FlatList
+    FlatList,
+    ToastAndroid
 } from 'react-native';
 import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy';
@@ -123,7 +124,7 @@ const CompleteProfile = ({ navigation, route }) => {
                 checkValidations();
                 // getAtheleteDetails();
             } else {
-                alert("Please check your internet connection and try again");
+                ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
             }
         } catch (error) {
             console.log(error);
@@ -172,7 +173,7 @@ const CompleteProfile = ({ navigation, route }) => {
                 }
             })
             .catch((error) => {
-                alert(error);
+                ToastAndroid.show(`${error}`, ToastAndroid.LONG)
                 setSubmit(false)
                 console.log(error);
             })

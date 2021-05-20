@@ -7,6 +7,7 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
 import Input from "../../common/Input";
 import { FontFamily } from "../../style/typograpy";
@@ -57,7 +58,7 @@ const ResetPassword = ({ navigation, route }) => {
       if (state.isConnected == true) {
         checkValidations();
       } else {
-        alert("Please check your internet connection and try again");
+        ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
       }
     } catch (error) {
       console.log(error);
@@ -72,9 +73,9 @@ const ResetPassword = ({ navigation, route }) => {
       setCheckCode(true);
     }
     else if (String(password).length <= 7) {
-      alert("Password must be between 8 to 16 characters");
+      ToastAndroid.show(`Password must be between 8 to 16 characters`, ToastAndroid.LONG)
     } else if (String(code).length <= 3) {
-      alert("Code must be 4 characters");
+      ToastAndroid.show(`Code must be 4 characters`, ToastAndroid.LONG)
     } else {
       setLoading(true);
       resetPasswordDetails();
@@ -95,16 +96,16 @@ const ResetPassword = ({ navigation, route }) => {
           navigation.navigate("Login");
         } else {
           setLoading(false);
-          alert(response.data.msg);
+          ToastAndroid.show(`${response.data.msg}`, ToastAndroid.LONG)
           console.log("error in service");
         }
       })
       .catch((error) => {
-        alert(error);
+        ToastAndroid.show(`${error}`, ToastAndroid.LONG)
         setLoading(false)
         console.log(error);
       })
-  
+
   };
 
   return (

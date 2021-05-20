@@ -7,6 +7,7 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
 import Input from "../../common/Input";
 import { FontFamily } from "../../style/typograpy";
@@ -39,7 +40,7 @@ const ForgotPassword = (props) => {
       if (state.isConnected == true) {
         checkValidations();
       } else {
-        alert("Please check your internet connection and try again");
+        ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
       }
     } catch (error) {
       console.log(error);
@@ -51,7 +52,7 @@ const ForgotPassword = (props) => {
     if (state.email == "") {
       setCheckEmail(true);
     } else if (!validateEmail()) {
-      alert("Please enter a proper email");
+      ToastAndroid.show(`Please enter a proper email`, ToastAndroid.LONG)
     } else {
       setLoading(true);
       resetPassword();
@@ -80,7 +81,7 @@ const ForgotPassword = (props) => {
         }
       })
       .catch((err) => {
-        alert('User not found');
+        ToastAndroid.show(`User not found`, ToastAndroid.LONG)
         setLoading(false);
         console.log(err);
       })

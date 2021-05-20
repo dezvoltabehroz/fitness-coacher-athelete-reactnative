@@ -12,7 +12,8 @@ import {
   NativeModules,
   Platform,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  ToastAndroid
 } from 'react-native';
 import AccountInput from '../../common/AccountInput'
 import AccountModal from '../../common/AccountModal';
@@ -126,7 +127,7 @@ const AccountSettingsScreen = (props) => {
         checkValidations();
         // getAtheleteDetails();
       } else {
-        alert("Please check your internet connection and try again");
+        ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
       }
     } catch (error) {
       console.log(error);
@@ -135,8 +136,8 @@ const AccountSettingsScreen = (props) => {
   };
 
   const checkValidations = () => {
-     setSubmit(true)
-     console.log(submit)
+    setSubmit(true)
+    console.log(submit)
     if (ageGroup && submit && country && address && phoneNumber && date && isPhoneValid(phoneNumber) && first_name && last_name) {
       getAtheleteDetails();
     } else {
@@ -176,7 +177,7 @@ const AccountSettingsScreen = (props) => {
         }
       })
       .catch((error) => {
-        alert(error);
+        ToastAndroid.show(`${error}`, ToastAndroid.LONG)
         console.log(error);
       })
   };
