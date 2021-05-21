@@ -9,7 +9,7 @@ import {
     ImageBackground,
     Image,
     AsyncStorage,
-    NativeModules,
+    ToastAndroid,
     Platform,
     Dimensions,
     TextInput
@@ -21,10 +21,57 @@ import Button from '../../common/Button'
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import DetailsModal from '../../common/DetailsModal'
 import { Container, Header, Content, Tab, Tabs } from 'native-base';
-
+import StarRating from 'react-native-star-rating';
+import { BookingServices } from '../../services';
+import { connect } from 'react-redux';
+import NetInfo from "@react-native-community/netinfo";
 const height = Dimensions.get('window').height
 const BookingDetails = (props) => {
     const [modalVisible, setModalVisible] = useState(false)
+    const [starCount, setStarCount] = useState(0);
+    const [review, setReview] = useState('');
+    const [submit, setSubmit] = useState(false)
+
+    const checkNetwork = async () => {
+
+        try {
+            let state = await NetInfo.fetch();
+            if (state.isConnected == true) {
+                checkValidations();
+            } else {
+                ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
+
+            }
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    };
+    const checkValidations = () => {
+        if (starCount != 0 && submit && review) {
+            handleSubmit()
+        } else {
+            setSubmit(true);
+        }
+    }
+
+    const handleSubmit = () => {
+        let userData = {
+            "CoachId": 5,
+            "stars": starCount,
+            "review": review,
+            "ratingBy": props?.user?.id
+        }
+        BookingServices.addRatingtoCoach(userData, props?.token)
+            .then((response) => {
+                if (response.data.success) {
+                    console.log(response.data)
+                    props.navigation.replace('TabContainer');
+                }
+                else { ToastAndroid.show(`${response.data.msg}`, ToastAndroid.LONG) }
+            })
+            .catch((err) => { ToastAndroid.show(`${err}`, ToastAndroid.LONG); console.log(err) })
+    }
     return (
         <View style={styles.container}>
             <StatusBar
@@ -46,18 +93,37 @@ const BookingDetails = (props) => {
 
                 <View style={styles.border}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', margin: 10, justifyContent: 'center' }}>
-                        <Image source={require('../../assets/star.png')} style={styles.profile} />
-                        <Image source={require('../../assets/star.png')} style={styles.profile} />
-                        <Image source={require('../../assets/star.png')} style={styles.profile} />
-                        <Image source={require('../../assets/star.png')} style={styles.profile} />
-                        <Image source={require('../../assets/star.png')} style={styles.profile} />
+                        <StarRating
+                            disabled={false}
+                            maxStars={5}
+                            starSize={25}
+                            starStyle={{ paddingHorizontal: 5 }}
+                            rating={starCount}
+                            selectedStar={(rating) => setStarCount(rating)}
+                            fullStarColor={'yellow'}
+                        />
 
                     </View>
+                    {
+                        submit && starCount == 0 ? <Text style={styles.errorStyle}> Please rate it cannot be empty </Text> : null
+                    }
                     <Text style={styles.text1}>Add booking review</Text>
-                    <TextInput style={styles.input} />
+                    <View >
+                        <TextInput
+                            style={styles.input}
+                            multiline={true}
+                            value={review}
+                            // isActive={isActive}
+                            onChangeText={(e) => setReview(e)}
+                        />
+                        {
+                            submit && review == "" ? <Text style={styles.errorStyle}> Review cannot be empty </Text> : null
+                        }
+                    </View>
+
                 </View>
                 <View style={{ marginHorizontal: 20 }}>
-                    <Button text={'Submit'} onPress={()=>{props.navigation.navigate('Billings')}} />
+                    <Button text={'Submit'} onPress={() => checkNetwork()} />
                 </View>
             </View>
         </View>
@@ -125,9 +191,9 @@ const styles = StyleSheet.create({
     {
         height: 110,
         marginTop: 10,
-        width: '95%',
+        width: '100%',
         borderRadius: 10,
-        marginBottom: 20,
+        marginBottom: 10,
         alignSelf: 'center',
         backgroundColor: Colors.backgroundColor
     },
@@ -149,6 +215,7 @@ const styles = StyleSheet.create({
         width: '90%',
         alignSelf: 'center',
         borderWidth: 1,
+        padding: '5%',
         borderColor: Colors.textColor,
         borderRadius: 10,
         marginTop: 20
@@ -159,9 +226,20 @@ const styles = StyleSheet.create({
         width: 20,
         marginRight: 5
     },
-
+    errorStyle: {
+        fontSize: 12,
+        color: "red",
+        paddingLeft: 0,
+    },
 
 
 });
+const mapStateToProps = (state) => ({
+    user: state.authReducer.userData || {},
+    token: state.authReducer.userToken || {}
+});
 
-export default BookingDetails
+
+export default connect(
+    mapStateToProps,
+)(BookingDetails);

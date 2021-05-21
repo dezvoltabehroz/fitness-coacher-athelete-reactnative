@@ -31,7 +31,7 @@ const SplashScreen = (props) => {
         props.navigation.replace('Login');
       }
     }, 2000);
-  });
+  },[]);
  
   return (
     <View style={styles.container}>

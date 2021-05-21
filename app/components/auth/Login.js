@@ -204,7 +204,7 @@ const SplashScreen = (props) => {
                 translucent
                 backgroundColor={'transparent'}
             />
-            <Image source={require('../../assets/logo.png')} style={[styles.logo, { marginTop: keyboardHeigth != 0 ? 0 : '23%', }]} />
+            <Image source={require('../../assets/coacherlogo.png')} resizeMode="contain" style={[styles.logo, { marginTop: keyboardHeigth != 0 ? 0 : '23%', }]} />
 
             <View style={styles.bottom}>
                 <Tabs tabBarUnderlineStyle={[styles.tabUnderline]} tabContainerStyle={{ elevation: 0, borderTopLeftRadius: 30, borderTopRightRadius: 30, height: 70, borderWidth: 0 }}>

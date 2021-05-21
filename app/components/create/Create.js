@@ -8,9 +8,9 @@ import {
   StatusBar,
   ImageBackground,
   Image,
-  AsyncStorage,
+  ToastAndroid,
   NativeModules,
-  Platform,
+  FlatList,
   Dimensions,
   TextInput,
   TouchableOpacity,
@@ -20,8 +20,15 @@ import { RadioButton, Checkbox } from 'react-native-paper';
 import { FontFamily } from '../../style/typograpy'
 import Button from '../../common/Button'
 import AgeGroupModal from '../../common/ageGroupModal'
+import { TrainingCategoryServices } from '../../services';
 const height = Dimensions.get('window').height
+const width = Dimensions.get('window').width
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 const SettingScreen = (props) => {
+  useEffect(() => {
+    getCategories();
+    getSkills();
+  }, [])
   const [modalVisible, setmodalVisible] = useState(false)
   const [checked, setChecked] = useState('baseBall')
   const [hitting, sethitting] = useState(false)
@@ -35,7 +42,136 @@ const SettingScreen = (props) => {
   const [icatcher, seticatcher] = useState(false)
   const [iinfield, setiInfield] = useState(false)
   const [ioutfield, setiOutfield] = useState(false)
+  const [submit, setSubmit] = useState(false)
   const [age, setAge] = useState('')
+  const [selectInstruction, setSelectInstruction] = useState({});
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [instructorModalVisible, setInstructorModalVisible] = useState(false);
+  const [selectInstructor, setSelectInstructor] = useState({});
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [coachSkills, setCoachSkills] = useState([]);
+  const [subCatVal, setSubCat] = useState(false)
+  const [cat, setCat] = useState(false)
+  const [skillVal, setSkillVal] = useState(false)
+  const [prev, setPrev] = useState(0);
+  const [arr, setArr] = useState([
+    {
+      flag: false,
+      age: "Under-9",
+    },
+    {
+      flag: false,
+      age: "10-11",
+    },
+    {
+      flag: false,
+      age: "12-14",
+    },
+    {
+      flag: false,
+      age: "15-16",
+    },
+    {
+      flag: false,
+      age: "18+",
+    },
+  ]);
+  const getCategories = () => {
+    TrainingCategoryServices.allTrainingTypes()
+      .then((response) => {
+        var skill = response.data.trainingTypes
+        console.log("allTrainingTypes level", skill);
+        for (let index = 0; index < response.data.trainingTypes.length; index++) {
+          skill[index].selected = false;
+        }
+        setCategories(skill);
+        getSubCategories(skill[0]);
+      })
+      .catch((err) => console.log(err))
+  };
+
+  const getSubCategories = (item) => {
+    TrainingCategoryServices.subCategories(item.id)
+      .then((response) => {
+        setCategoriesLoading(false)
+        var skill = response.data.subCategories;
+        console.log("skill level", skill);
+        for (let index = 0; index < response.data.subCategories.length; index++) {
+          skill[index].selected = false;
+        }
+        setSubCategories(skill);
+      })
+      .catch((err) => console.log(err))
+  };
+
+  const getSkills = async () => {
+    TrainingCategoryServices.getSkillsBy()
+      .then((response) => {
+        var skill = response.data.skills;
+        console.log("skill level", skill);
+        for (let index = 0; index < response.data.skills.length; index++) {
+          skill[index].selected = false;
+        }
+        setCoachSkills(skill);
+      })
+      .catch((err) => {
+        console.log("error =", err);
+      });
+  };
+  const settingValue = (item) => {
+    setSelectInstruction(item);
+    getSkills(item);
+  };
+  const settingInstructor = (item) => {
+    setSelectInstructor(item);
+    getSubCategories(item);
+  };
+  const selectingSkills = (iteration) => {
+    var skill = [...coachSkills];
+    // if (skill[iteration].selected) {
+    //   skill[iteration].selected = false;
+    // } else {
+    //   skill[iteration].selected = true;
+    // }
+    for (let index = 0; index < skill.length; index++) {
+      skill[index].selected = false;
+    }
+    skill[iteration].selected = true;
+    console.log("skill level is ", skill);
+    setCoachSkills(skill);
+    setSkillVal(true)
+  };
+
+  const selectingTrainingType = async (iteration) => {
+    var categoriesArr = [...categories];
+    for (let index = 0; index < categoriesArr.length; index++) {
+      categoriesArr[index].selected = false;
+    }
+    categoriesArr[iteration].selected = true;
+    await setCategories(categoriesArr);
+    await setCat(true);
+  };
+
+  const checkBoxFunc = (iteration) => {
+    var instruction = [...subCategories];
+
+    // instruction[iteration].selected = true;
+    if (instruction[iteration].selected) {
+      instruction[iteration].selected = false;
+      setSubCat(false);
+    } else {
+      instruction[iteration].selected = true;
+    }
+    console.log("skill level is ", instruction);
+    setSubCategories(instruction);
+    for (let index = 0; index < instruction.length; index++) {
+      if (instruction[index].selected) {
+        setSubCat(true);
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -44,19 +180,148 @@ const SettingScreen = (props) => {
         backgroundColor={'transparent'}
       />
       <ScrollView style={styles.bottom}>
-        <Text style={styles.text}>Athlete Sport</Text>
+        <Text style={styles.text}>Instructor Type</Text>
         <View style={styles.outerView}>
-          <View style={[styles.innerView, { borderColor: checked == 'baseBall' ? Colors.blackColor : Colors.textColor }]}>
+          {/* <TouchableOpacity
+            style={styles.dropDown}
+            onPress={() => {
+              setInstructorModalVisible(true);
+              setCategoriesLoading(true);
+              getCategories();
+              setCheckInstructorTypes(false)
+            }}
+          >
+            {selectInstructor != undefined &&
+              Object.keys(selectInstructor).length > 0 ? (
+              // setCheckInstructorTypes(false)
+              <Text style={styles.innertext}>{selectInstructor.title}</Text>
+            ) : (
+              <Text style={styles.innertext}>Select</Text>
+            )}
+            <Image
+              source={require("../../assets/drop-down.png")}
+              style={styles.dropImage}
+            />
+          </TouchableOpacity> */}
+          <FlatList
+            data={categories}
+            // showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.contentContainerStyle}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => {
+              return (
+                <View style={styles.outerView}>
+                  <View style={[styles.innerView1]}>
+                    <MaterialIcons onPress={() => selectingTrainingType(index)}
+                      size={20}
+                      name={item.selected ? "check-box" : "check-box-outline-blank"} />
+                    <Text style={styles.innertext}>{item.title}</Text>
+                  </View>
+                </View>
+              );
+            }}
+          />
+        </View>
+        {submit && !cat && (
+          <Text style={styles.errorStyle}> Please select instructor type</Text>
+        )}
+
+        <Text style={styles.text}>Instruction Types</Text>
+        <View style={styles.outerView}>
+
+          <FlatList
+            data={subCategories}
+            contentContainerStyle={styles.contentContainerStyle}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => {
+              return (
+                <View style={styles.outerView}>
+                  <View style={[styles.innerView1]}>
+                    <MaterialIcons onPress={() => checkBoxFunc(index)}
+                      size={20}
+                      name={item.selected ? "check-box" : "check-box-outline-blank"} />
+                    <Text style={styles.innertext}>{item.title}</Text>
+                  </View>
+                </View>
+              );
+            }}
+          />
+        </View>
+        {submit && subCatVal != true && (
+          <Text style={styles.errorStyle}>
+            Please select aleast one instruction type
+          </Text>
+        )}
+        <Text style={[styles.text, { marginTop: 5 }]}>Skill Level</Text>
+
+        <FlatList
+          data={coachSkills}
+          contentContainerStyle={styles.contentContainerStyle}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item, index }) => {
+            return (
+              <View style={styles.outerView}>
+                <View style={[styles.innerView1]}>
+                  <MaterialIcons onPress={() => selectingSkills(index)}
+                    size={20}
+                    name={item.selected ? "check-box" : "check-box-outline-blank"} />
+                  <Text style={styles.innertext}>{item.skill}</Text>
+                </View>
+              </View>
+            );
+          }}
+        />
+        {submit && !skillVal && (
+          <Text style={styles.errorStyle}>
+            Please select atleast one skill level
+          </Text>
+        )}
+
+        <Text style={[styles.text, { marginTop: 5 }]}>Coach Age Group</Text>
+
+        <FlatList
+          data={arr}
+          contentContainerStyle={styles.contentContainerStyle}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item, index }) => {
+            return (
+              <View style={styles.outerView}>
+                <View style={[styles.innerView1]}>
+                  <MaterialIcons onPress={() => {
+                    let array = arr;
+                    array[prev].flag = false;
+                    array[index].flag = true;
+                    setArr(arr);
+                    // ageArr.push({ ageGroup: item.age })
+                    // setAge(ageArr)
+                    setAge(item.age);
+                    setPrev(index);
+                  }}
+                    size={20}
+                    name={item.flag && age == item.age ? "check-box" : "check-box-outline-blank"} />
+                  <Text style={styles.innertext}>{item.age}</Text>
+                </View>
+              </View>
+            );
+          }}
+        />
+        {submit && !age && (
+          <Text style={styles.errorStyle}>
+            Please select age group
+          </Text>
+        )}
+
+        {/* 
+        <Text style={styles.text}>Athlete Sport</Text>
+        
+        <View style={[styles.innerView, { borderColor: checked == 'baseBall' ? Colors.blackColor : Colors.textColor }]}>
             <RadioButton
               color={Colors.blackColor}
               uncheckedColor={Colors.blackColor}
               value="baseall"
               status={checked === 'baseBall' ? 'checked' : 'unchecked'}
-              onPress={() => setChecked('baseBall')}
-            />
-            <Text style={styles.innertext}>Baseball</Text>
-
-          </View>
+              onPress={() => setChecked('baseBall')}/>
+                </View>
           <View style={[styles.innerView, { borderColor: checked == 'softBall' ? Colors.blackColor : Colors.textColor }]}>
             <RadioButton
               color={Colors.blackColor}
@@ -67,7 +332,6 @@ const SettingScreen = (props) => {
             />
             <Text style={styles.innertext}>Softball</Text>
           </View>
-        </View>
         <Text style={[styles.text, { marginTop: 15 }]}>Baseball Caregory</Text>
         <View style={styles.outerView}>
           <View style={[styles.innerView1, { width: '35%' }]}>
@@ -218,7 +482,7 @@ const SettingScreen = (props) => {
             />
             <Text style={styles.innertext}>Outfield</Text>
           </View>
-        </View>
+        </View> */}
         <View style={styles.imageOuter}>
           <View style={styles.profileView}>
             <Image source={require('../../assets/avatar.png')} style={styles.image} />
@@ -232,6 +496,7 @@ const SettingScreen = (props) => {
         <Button text={'Create Booking Request'} onPress={() => { props.navigation.navigate('Preview') }} />
         <View style={{ height: 50 }}></View>
       </ScrollView>
+
       <AgeGroupModal modalVisible={modalVisible} setModalVisible={setmodalVisible} setAge={setAge} />
     </View>
   );
@@ -250,6 +515,12 @@ const styles = StyleSheet.create({
     marginTop: '22%',
     paddingHorizontal: 20,
     paddingTop: 20
+  },
+  contentContainerStyle: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: "5%",
+    width: width,
   },
   text:
   {
@@ -294,10 +565,14 @@ const styles = StyleSheet.create({
     // width: '33%',
     borderWidth: 1,
     borderRadius: 10,
+    marginRight: "3%",
     borderColor: Colors.textColor,
+    // borderColor: 'red',
     paddingRight: 10,
-    alignItems: 'center',
-    flexDirection: 'row'
+    paddingHorizontal: 5,
+    alignItems: "center",
+    flexDirection: "row",
+    // backgroundColor: 'red',
   },
   innerView2:
   {
