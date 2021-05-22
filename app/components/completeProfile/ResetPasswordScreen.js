@@ -15,13 +15,14 @@ import { Colors } from "../../style/colors";
 import NetInfo from "@react-native-community/netinfo";
 import { ActivityIndicator } from "react-native";
 import { AuthServices } from "../../services";
-
+import { Snackbar } from 'react-native-paper';
 const ResetPassword = ({ navigation, route }) => {
   console.log(navigation)
   console.log(route)
   const newOtp = route.params.email;
   console.log("new otp is", route.params.email);
-
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState("")
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [checkCode, setCheckCode] = useState(false);
@@ -58,7 +59,8 @@ const ResetPassword = ({ navigation, route }) => {
       if (state.isConnected == true) {
         checkValidations();
       } else {
-        ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
+        setMessage(`Please check your internet connection and try again`)
+        setVisible(true);
       }
     } catch (error) {
       console.log(error);
@@ -73,9 +75,11 @@ const ResetPassword = ({ navigation, route }) => {
       setCheckCode(true);
     }
     else if (String(password).length <= 7) {
-      ToastAndroid.show(`Password must be between 8 to 16 characters`, ToastAndroid.LONG)
+      setMessage(`Password must be between 8 to 16 characters`)
+      setVisible(true);
     } else if (String(code).length <= 3) {
-      ToastAndroid.show(`Code must be 4 characters`, ToastAndroid.LONG)
+      setMessage(`Code must be 4 characters`)
+      setVisible(true);
     } else {
       setLoading(true);
       resetPasswordDetails();
@@ -96,12 +100,14 @@ const ResetPassword = ({ navigation, route }) => {
           navigation.navigate("Login");
         } else {
           setLoading(false);
-          ToastAndroid.show(`${response.data.msg}`, ToastAndroid.LONG)
+          setMessage(`${response.data.msg}`)
+          setVisible(true);
           console.log("error in service");
         }
       })
       .catch((error) => {
-        ToastAndroid.show(`${error}`, ToastAndroid.LONG)
+        setMessage(`${error}`)
+        setVisible(true);
         setLoading(false)
         console.log(error);
       })
@@ -167,6 +173,19 @@ const ResetPassword = ({ navigation, route }) => {
                 <Text style={styles.btnText}>Update</Text>}
           </TouchableOpacity>
         </View>
+        <View style={styles.snackbarContainerStyle}>
+          <Snackbar
+            visible={visible}
+            onDismiss={() => setVisible(!visible)}
+            action={{
+              label: 'OK',
+              onPress: () => {
+                console.log("hello")
+              },
+            }}>
+            {message}
+          </Snackbar>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -176,6 +195,10 @@ const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: Colors.backgroundColor,
     height: "100%",
+  },
+  snackbarContainerStyle: {
+    top: '10%',
+    alignItems: "center"
   },
   logoContainer: {
     height: "40%",

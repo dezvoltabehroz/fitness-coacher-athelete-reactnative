@@ -20,21 +20,26 @@ import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy'
 import BookingCard from './BookingCard';
 import { connect } from 'react-redux';
+import { Snackbar } from 'react-native-paper';
 const height = Dimensions.get('window').height;
 
 const BookingScreen = (props) => {
   const [active, setActive] = useState(true);
   const [bookings, setBookings] = useState([]);
+  const [completedBookings, setCompletedBookings] = useState([]);
   const [loading, setLoading] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState("")
   useEffect(() => {
     getBookings();
+    getCompletedBookings();
   }, []);
 
 
   const getBookings = async () => {
     setLoading(true)
     // console.log("booking details are", state.bookingDetails);
-    BookingServices.getBookings(props?.user?.id, props?.token)
+    BookingServices.getMyActiveBookings(props?.user?.id, props?.token)
       .then((response) => {
         // alert("success");
         if (response.data.success) {
@@ -45,16 +50,48 @@ const BookingScreen = (props) => {
           console.log("booking details are", bookings);
         }
         else {
-          ToastAndroid.show(`${response.data.msg}`, ToastAndroid.LONG)
+          setMessage(`${response.data.msg}`)
+          setVisible(true);
           setLoading(false)
         }
 
       })
       .catch((error) => {
-        ToastAndroid.show(`${error}`, ToastAndroid.LONG)
-        let arr = Array(3);
+        let arr = Array(6);
+
+        setMessage(`${error}`)
+        setVisible(true);
         setLoading(false)
         setBookings(arr);
+        console.log("error =", error);
+      });
+  };
+
+  const getCompletedBookings = async () => {
+    setLoading(true)
+    // console.log("booking details are", state.bookingDetails);
+    BookingServices.completedBookings(props?.user?.id, props?.token)
+      .then((response) => {
+        // alert("success");
+        if (response.data.success) {
+          let arr = Array(10);
+          setLoading(false)
+          setCompletedBookings(arr);
+          console.log("booking details are", bookings);
+        }
+        else {
+          setMessage(`${response.data.msg}`)
+          setVisible(true);
+          setLoading(false)
+        }
+
+      })
+      .catch((error) => {
+        setMessage(`${error}`)
+        setVisible(true);
+        let arr = Array(3);
+        setLoading(false)
+        setCompletedBookings(arr);
         console.log("error =", error);
       });
   };
@@ -95,17 +132,44 @@ const BookingScreen = (props) => {
               <ActivityIndicator size={20} color={'#030E2D'} />
             </View>
             :
-            <FlatList
-              data={bookings}
-              showsVerticalScrollIndicator={false}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item, index }) => {
-                return (
-                  <BookingCard navigation={props.navigation} active={active} />
-                )
-              }}
-            />
+            active ?
+              <FlatList
+                data={bookings}
+                contentContainerStyle={{ paddingBottom: "30%" }}
+                showsVerticalScrollIndicator={false}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item, index }) => {
+                  return (
+                    <BookingCard navigation={props.navigation} active={active} />
+                  )
+                }}
+              />
+              :
+              <FlatList
+                data={completedBookings}
+                contentContainerStyle={{ paddingBottom: "30%" }}
+                showsVerticalScrollIndicator={false}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item, index }) => {
+                  return (
+                    <BookingCard navigation={props.navigation} active={false} />
+                  )
+                }}
+              />
         }
+      </View>
+      <View style={styles.snackbarContainerStyle}>
+        <Snackbar
+          visible={visible}
+          onDismiss={() => setVisible(!visible)}
+          action={{
+            label: 'OK',
+            onPress: () => {
+              console.log("hello")
+            },
+          }}>
+          {message}
+        </Snackbar>
       </View>
     </View>
   );
@@ -114,6 +178,10 @@ const BookingScreen = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  snackbarContainerStyle: {
+    bottom: '10%',
+    alignItems: "center"
   },
   bottom:
   {

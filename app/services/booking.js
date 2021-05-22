@@ -11,8 +11,11 @@ let configToken = (token) => {
     }
 }
 const Api = {
-    getBookings: function (id, token) {
-        return axiosInstance.get(`athlete/getBookings?AthleteId=${id}`, configToken(token))
+    getMyActiveBookings: function (id, token) {
+        return axiosInstance.get(`athlete/getBookings?AthleteId=${id}&status=active`, configToken(token))
+    },
+    completedBookings: function (id, token) {
+        return axiosInstance.get(`athlete/getBookings?AthleteId=${id}&status=completed`, configToken(token))
     },
     createRequest: function (userData, token) {
         return axiosInstance.get('athlete/coachRequest', userData, configToken(token))

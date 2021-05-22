@@ -30,6 +30,7 @@ import { AuthServices } from "../../services";
 import { authActions } from '../../redux/actions/auth';
 import { connect } from 'react-redux';
 import { bindActionCreators } from "redux";
+import { Snackbar } from 'react-native-paper';
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 var keyheight = ''
@@ -45,7 +46,8 @@ const SplashScreen = (props) => {
     const [password, setPassword] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-
+    const [visible, setVisible] = useState(false)
+    const [message, setMessage] = useState("")
     const [checkFirst_name, setCheckFirstname] = useState(false);
     const [checkLast_name, setCheckLastname] = useState(false);
     const [checkEmail, setCheckEmail] = useState(false);
@@ -88,16 +90,19 @@ const SplashScreen = (props) => {
             password: loginPassword,
         };
         AuthServices.userLogin(loginDetails)
-        .then(async (res) => {
-          if (res.status == 200) {
-            await AsyncStorage.setItem('Token', JSON.stringify(res.data.userData.tokenInfo))
-            props.authActions.getUserProfile(res.data.userData.tokenInfo, props.navigation.replace);
-            // props.navigation.replace("TabContainer");
-            console.log("res :", res.data.userData.tokenInfo);
-          }
-  
-        })
-        .catch((err) => { setLoading(false); console.log(err) })
+            .then(async (res) => {
+                if (res.status == 200) {
+                    await AsyncStorage.setItem('Token', JSON.stringify(res.data.userData.tokenInfo))
+                    props.authActions.getUserProfile(res.data.userData.tokenInfo, props.navigation.replace);
+                    // props.navigation.replace("TabContainer");
+                    console.log("res :", res.data.userData.tokenInfo);
+                }
+
+            })
+            .catch((err) => {
+                setMessage(`${err}`)
+                setVisible(true); setLoading(false); console.log(err)
+            })
     };
 
     const didShow = (height) => {
@@ -125,8 +130,10 @@ const SplashScreen = (props) => {
             if (state.isConnected == true) {
                 checkValidations();
             } else {
-                ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG) 
-                
+                setMessage(`Please check your internet connection and try again`)
+                setVisible(true);
+                // ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
+
             }
         } catch (error) {
             console.log(error);
@@ -146,15 +153,20 @@ const SplashScreen = (props) => {
         } else if (password == "") {
             setCheckConfirmPassword(true);
         } else if (String(first_name).length <= 2) {
-            ToastAndroid.show(`Firstname must be atleast 3 characters`, ToastAndroid.LONG) 
+            setMessage(`Firstname must be atleast 3 characters`)
+            setVisible(true);
         } else if (String(last_name).length <= 2) {
-            ToastAndroid.show(`Lastname must be atleast 3 characters`, ToastAndroid.LONG) 
+            setMessage(`Lastname must be atleast 3 characters`)
+            setVisible(true);
         } else if (!validateEmail()) {
-            ToastAndroid.show(`Please enter a proper email`, ToastAndroid.LONG) 
+            setMessage(`Please enter a proper email`)
+            setVisible(true);
         } else if (String(password).length <= 7) {
-            ToastAndroid.show(`Password must be between 8 to 16 characters`, ToastAndroid.LONG) 
+            setMessage(`Password must be between 8 to 16 characters`)
+            setVisible(true);
         } else if (confirmPassword != password) {
-            ToastAndroid.show(`Password Mismatch`, ToastAndroid.LONG) 
+            setMessage(`Password Mismatch`)
+            setVisible(true);
         } else {
             navigateToNextScreen();
         }
@@ -184,6 +196,7 @@ const SplashScreen = (props) => {
             setConfirmPassword(value);
         }
     };
+    
     const navigateToNextScreen = () => {
         let data = {
             firstName: first_name,
@@ -239,9 +252,20 @@ const SplashScreen = (props) => {
 
                                     <Button loading={loading} text={'Login'} onPress={() => loginValidations()} />
                                 </View>
-                                <Link style={styles.linkText} to="/ForgotPassword">
-                                    Forgot your password?
-              </Link>
+                                <Link style={styles.linkText} to="/ForgotPassword">Forgot your password? </Link>
+                                <View style={styles.snackbarContainerStyle}>
+                                    <Snackbar
+                                        visible={visible}
+                                        onDismiss={() => setVisible(!visible)}
+                                        action={{
+                                            label: 'OK',
+                                            onPress: () => {
+                                                console.log("hello")
+                                            },
+                                        }}>
+                                        {message}
+                                    </Snackbar>
+                                </View>
                             </View>
                         </ScrollView>
                     </Tab>
@@ -329,6 +353,19 @@ const SplashScreen = (props) => {
                                     <Button text={'Next'} onPress={() => { checkNetwork(); }} />
                                 </View>
                                 <Text style={styles.text}>By signing up, you agree to ECHO's Terms of Use & Privacy Policy</Text>
+                                <View style={styles.snackbarContainerStyle}>
+                                    <Snackbar
+                                        visible={visible}
+                                        onDismiss={() => setVisible(!visible)}
+                                        action={{
+                                            label: 'OK',
+                                            onPress: () => {
+                                                console.log("hello")
+                                            },
+                                        }}>
+                                        {message}
+                                    </Snackbar>
+                                </View>
                                 <View style={{ marginBottom: 150 }}></View>
                             </View>
                         </ScrollView>
@@ -343,6 +380,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.backgroundColor
+    },
+    snackbarContainerStyle: {
+        bottom: 30,
+        alignItems: "center"
     },
     tab:
     {

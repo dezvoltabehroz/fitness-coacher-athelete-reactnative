@@ -32,7 +32,7 @@ import { connect } from 'react-redux';
 import { authActions } from '../../redux/actions/auth';
 import { bindActionCreators } from "redux";
 import { launchImageLibrary } from 'react-native-image-picker';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { Snackbar } from 'react-native-paper';
 import Calendar from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 const width = Dimensions.get('window').width
@@ -53,6 +53,8 @@ const AccountSettingsScreen = (props) => {
   const [checkAgeGroup, setCheckAgeGroup] = useState(false);
   const [image, setImage] = useState('')
   const phoneRef = React.createRef(null);
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState("")
   const [arr, setArr] = useState([
     {
       flag: true,
@@ -127,7 +129,8 @@ const AccountSettingsScreen = (props) => {
         checkValidations();
         // getAtheleteDetails();
       } else {
-        ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
+        setMessage(`Please check your internet connection and try again`)
+        setVisible(true);
       }
     } catch (error) {
       console.log(error);
@@ -177,7 +180,8 @@ const AccountSettingsScreen = (props) => {
         }
       })
       .catch((error) => {
-        ToastAndroid.show(`${error}`, ToastAndroid.LONG)
+        setMessage(`${error}`)
+        setVisible(true);
         console.log(error);
       })
   };
@@ -364,6 +368,19 @@ const AccountSettingsScreen = (props) => {
       >
         <View />
       </CountryPicker>
+      <View style={styles.snackbarContainerStyle}>
+        <Snackbar
+          visible={visible}
+          onDismiss={() => setVisible(!visible)}
+          action={{
+            label: 'OK',
+            onPress: () => {
+              console.log("hello")
+            },
+          }}>
+          {message}
+        </Snackbar>
+      </View>
       <AccountModal modalVisible={modalVisible} setModalVisible={setModalVisible} />
     </View>
   );

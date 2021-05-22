@@ -15,7 +15,7 @@ import {
     TextInput
 } from 'react-native';
 import { Colors } from '../../style/colors'
-import { RadioButton, Checkbox } from 'react-native-paper';
+import { RadioButton, Checkbox, Snackbar } from 'react-native-paper';
 import { FontFamily } from '../../style/typograpy'
 import Button from '../../common/Button'
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -31,7 +31,8 @@ const BookingDetails = (props) => {
     const [starCount, setStarCount] = useState(0);
     const [review, setReview] = useState('');
     const [submit, setSubmit] = useState(false)
-
+    const [visible, setVisible] = useState(false)
+    const [message, setMessage] = useState("")
     const checkNetwork = async () => {
 
         try {
@@ -39,8 +40,8 @@ const BookingDetails = (props) => {
             if (state.isConnected == true) {
                 checkValidations();
             } else {
-                ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
-
+                setMessage(`Please check your internet connection and try again`)
+                setVisible(true);
             }
         } catch (error) {
             console.log(error);
@@ -68,9 +69,15 @@ const BookingDetails = (props) => {
                     console.log(response.data)
                     props.navigation.replace('TabContainer');
                 }
-                else { ToastAndroid.show(`${response.data.msg}`, ToastAndroid.LONG) }
+                else {
+                    setMessage(`${response.data.msg}`)
+                    setVisible(true);
+                }
             })
-            .catch((err) => { ToastAndroid.show(`${err}`, ToastAndroid.LONG); console.log(err) })
+            .catch((err) => {
+                setMessage(`${err}`)
+                setVisible(true);
+            })
     }
     return (
         <View style={styles.container}>
@@ -125,6 +132,19 @@ const BookingDetails = (props) => {
                 <View style={{ marginHorizontal: 20 }}>
                     <Button text={'Submit'} onPress={() => checkNetwork()} />
                 </View>
+                <View style={styles.snackbarContainerStyle}>
+                    <Snackbar
+                        visible={visible}
+                        onDismiss={() => setVisible(!visible)}
+                        action={{
+                            label: 'OK',
+                            onPress: () => {
+                                console.log("hello")
+                            },
+                        }}>
+                        {message}
+                    </Snackbar>
+                </View>
             </View>
         </View>
     );
@@ -133,6 +153,11 @@ const BookingDetails = (props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    snackbarContainerStyle: {
+        top: "20%",
+        justifyContent: "flex-end",
+        alignItems: "center"
     },
     bottom:
     {

@@ -50,6 +50,8 @@ const CompleteProfile = ({ navigation, route }) => {
     const [checkAgeGroup, setCheckAgeGroup] = useState(false);
     const [image, setImage] = useState('')
     const phoneRef = React.createRef(null);
+    const [visible, setVisible] = useState(false)
+    const [message, setMessage] = useState("")
     const [arr, setArr] = useState([
         {
             flag: true,
@@ -124,7 +126,8 @@ const CompleteProfile = ({ navigation, route }) => {
                 checkValidations();
                 // getAtheleteDetails();
             } else {
-                ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
+                setMessage(`Please check your internet connection and try again`)
+                setVisible(true);
             }
         } catch (error) {
             console.log(error);
@@ -173,7 +176,8 @@ const CompleteProfile = ({ navigation, route }) => {
                 }
             })
             .catch((error) => {
-                ToastAndroid.show(`${error}`, ToastAndroid.LONG)
+                setMessage(`${error}`)
+                setVisible(true);
                 setSubmit(false)
                 console.log(error);
             })
@@ -466,6 +470,19 @@ const CompleteProfile = ({ navigation, route }) => {
             >
                 <View />
             </CountryPicker>
+            <View style={styles.snackbarContainerStyle}>
+                <Snackbar
+                    visible={visible}
+                    onDismiss={() => setVisible(!visible)}
+                    action={{
+                        label: 'OK',
+                        onPress: () => {
+                            console.log("hello")
+                        },
+                    }}>
+                    {message}
+                </Snackbar>
+            </View>
         </View>
     );
 };
@@ -476,6 +493,10 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.backgroundColor
 
     },
+    snackbarContainerStyle: {
+        bottom: '10%',
+        alignItems: "center"
+      },
     bottom:
     {
         height: '100%',

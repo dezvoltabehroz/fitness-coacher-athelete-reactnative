@@ -13,6 +13,7 @@ import Input from "../../common/Input";
 import { FontFamily } from "../../style/typograpy";
 import { Colors } from "../../style/colors";
 import { AuthServices } from "../../services";
+import { Snackbar } from 'react-native-paper';
 // import * as verifyEmailService from "../../../services/VerifyEmail";
 // import * as resendOtpService from "../../../services/ResendCode";
 import NetInfo from "@react-native-community/netinfo";
@@ -20,7 +21,8 @@ import NetInfo from "@react-native-community/netinfo";
 const EmailSent = (props) => {
   const [code, setCode] = useState("");
   const [checkCode, setCheckCode] = useState("");
-
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState("")
   const [state, setState] = useState({
     email: "",
   });
@@ -45,7 +47,8 @@ const EmailSent = (props) => {
       if (state.isConnected == true) {
         checkValidations();
       } else {
-        ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
+        setMessage(`Please check your internet connection and try again`)
+        setVisible(true);
       }
     } catch (error) {
       console.log(error);
@@ -59,9 +62,11 @@ const EmailSent = (props) => {
     } else if (code == "") {
       setCheckCode(true);
     } else if (!validateEmail()) {
-      ToastAndroid.show(`Please enter a proper email`, ToastAndroid.LONG)
+      setMessage(`Please enter a proper email`)
+      setVisible(true);
     } else if (String(code).length <= 3) {
-      ToastAndroid.show(`Code must be 4 characters`, ToastAndroid.LONG)
+      setMessage(`Code must be 4 characters`)
+      setVisible(true);
     } else {
       // resendCode();
       enterCode();
@@ -92,7 +97,8 @@ const EmailSent = (props) => {
         console.log("error in service");
       }
     } catch (error) {
-      ToastAndroid.show(`${error}`, ToastAndroid.LONG)
+      setMessage(`${error}`)
+      setVisible(true);
       console.log(error);
     }
   };
@@ -111,7 +117,8 @@ const EmailSent = (props) => {
         console.log("error in service");
       }
     } catch (error) {
-      ToastAndroid.show(`${error}`, ToastAndroid.LONG)
+      setMessage(`${error}`)
+      setVisible(true);
       console.log(error);
     }
   };
@@ -167,6 +174,19 @@ const EmailSent = (props) => {
             <Text style={styles.btnText}>Resend Code</Text>
           </TouchableOpacity>
         </View>
+        <View style={styles.snackbarContainerStyle}>
+          <Snackbar
+            visible={visible}
+            onDismiss={() => setVisible(!visible)}
+            action={{
+              label: 'OK',
+              onPress: () => {
+                console.log("hello")
+              },
+            }}>
+            {message}
+          </Snackbar>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -176,6 +196,10 @@ const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: Colors.backgroundColor,
     height: "100%",
+  },
+  snackbarContainerStyle: {
+    top: '10%',
+    alignItems: "center"
   },
   logoContainer: {
     height: "40%",

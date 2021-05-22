@@ -101,6 +101,7 @@ const SettingScreen = (props) => {
           skill[index].selected = false;
         }
         setSubCategories(skill);
+        getSkills()
       })
       .catch((err) => console.log(err))
   };
@@ -149,6 +150,7 @@ const SettingScreen = (props) => {
       categoriesArr[index].selected = false;
     }
     categoriesArr[iteration].selected = true;
+    getSubCategories(categoriesArr[iteration])
     await setCategories(categoriesArr);
     await setCat(true);
   };
@@ -180,9 +182,9 @@ const SettingScreen = (props) => {
         backgroundColor={'transparent'}
       />
       <ScrollView style={styles.bottom}>
-        <Text style={styles.text}>Instructor Type</Text>
+        {/* <Text style={styles.text}>Instructor Type</Text>
         <View style={styles.outerView}>
-          {/* <TouchableOpacity
+         <TouchableOpacity
             style={styles.dropDown}
             onPress={() => {
               setInstructorModalVisible(true);
@@ -202,7 +204,7 @@ const SettingScreen = (props) => {
               source={require("../../assets/drop-down.png")}
               style={styles.dropImage}
             />
-          </TouchableOpacity> */}
+          </TouchableOpacity> 
           <FlatList
             data={categories}
             // showsVerticalScrollIndicator={false}
@@ -309,9 +311,9 @@ const SettingScreen = (props) => {
           <Text style={styles.errorStyle}>
             Please select age group
           </Text>
-        )}
+        )} */}
 
-        {/* 
+        
         <Text style={styles.text}>Athlete Sport</Text>
         
         <View style={[styles.innerView, { borderColor: checked == 'baseBall' ? Colors.blackColor : Colors.textColor }]}>
@@ -321,6 +323,7 @@ const SettingScreen = (props) => {
               value="baseall"
               status={checked === 'baseBall' ? 'checked' : 'unchecked'}
               onPress={() => setChecked('baseBall')}/>
+              <Text style={styles.innertext}>Baseball</Text>
                 </View>
           <View style={[styles.innerView, { borderColor: checked == 'softBall' ? Colors.blackColor : Colors.textColor }]}>
             <RadioButton
@@ -482,7 +485,7 @@ const SettingScreen = (props) => {
             />
             <Text style={styles.innertext}>Outfield</Text>
           </View>
-        </View> */}
+        </View>
         <View style={styles.imageOuter}>
           <View style={styles.profileView}>
             <Image source={require('../../assets/avatar.png')} style={styles.image} />

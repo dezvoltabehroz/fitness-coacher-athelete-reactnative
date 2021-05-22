@@ -15,6 +15,7 @@ import { Colors } from "../../style/colors";
 import NetInfo from "@react-native-community/netinfo";
 import { AuthServices } from "../../services";
 import { ActivityIndicator } from "react-native";
+import { Snackbar } from 'react-native-paper';
 
 const ForgotPassword = (props) => {
   const [code, setCode] = useState("");
@@ -24,7 +25,8 @@ const ForgotPassword = (props) => {
   });
 
   const [checkEmail, setCheckEmail] = useState(false);
-
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState("")
   const _onHandleChange = (name, value) => {
     if (name == "email") {
       setCheckEmail(false);
@@ -40,7 +42,8 @@ const ForgotPassword = (props) => {
       if (state.isConnected == true) {
         checkValidations();
       } else {
-        ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
+        setMessage(`Please check your internet connection and try again`)
+        setVisible(true);
       }
     } catch (error) {
       console.log(error);
@@ -52,7 +55,8 @@ const ForgotPassword = (props) => {
     if (state.email == "") {
       setCheckEmail(true);
     } else if (!validateEmail()) {
-      ToastAndroid.show(`Please enter a proper email`, ToastAndroid.LONG)
+      setMessage(`Please enter a proper email`)
+      setVisible(true);
     } else {
       setLoading(true);
       resetPassword();
@@ -81,7 +85,8 @@ const ForgotPassword = (props) => {
         }
       })
       .catch((err) => {
-        ToastAndroid.show(`User not found`, ToastAndroid.LONG)
+        setMessage(`User not found`)
+        setVisible(true);
         setLoading(false);
         console.log(err);
       })
@@ -122,6 +127,19 @@ const ForgotPassword = (props) => {
                 <Text style={styles.btnText}>Get new OTP</Text>}
           </TouchableOpacity>
         </View>
+        <View style={styles.snackbarContainerStyle}>
+          <Snackbar
+            visible={visible}
+            onDismiss={() => setVisible(!visible)}
+            action={{
+              label: 'OK',
+              onPress: () => {
+                console.log("hello")
+              },
+            }}>
+            {message}
+          </Snackbar>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -131,6 +149,10 @@ const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: Colors.backgroundColor,
     height: "100%",
+  },
+  snackbarContainerStyle: {
+    top: '10%',
+    alignItems: "center"
   },
   logoContainer: {
     height: "60%",

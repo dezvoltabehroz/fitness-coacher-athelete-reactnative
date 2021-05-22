@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { Colors } from '../../style/colors';
 import { FontFamily } from '../../style/typograpy';
-import { Switch } from 'react-native-paper';
+import { Switch, Snackbar } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Input from "../../common/Input";
 import { AuthServices, } from '../../services';
@@ -32,6 +32,8 @@ const ChangePassword = props => {
     const [confirmNewPassword, setConfirmNewPassword] = React.useState("");
     const [submit, setSubmit] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
+    const [visible, setVisible] = useState(false)
+    const [message, setMessage] = useState("")
 
     const checkNetwork = async () => {
         setLoading(true)
@@ -44,7 +46,8 @@ const ChangePassword = props => {
                 checkValidations();
             } else {
                 setLoading(false)
-                ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
+                setMessage(`Please check your internet connection and try again`)
+                setVisible(true);
             }
         } catch (error) {
             console.log(error);
@@ -72,16 +75,22 @@ const ChangePassword = props => {
         AuthServices.changePassword(props?.user?.id, userData, props?.token)
             .then((respone) => {
                 if (respone.data.success) {
-                    ToastAndroid.show(`${respone.data.msg}`, ToastAndroid.LONG);
+                    setMessage(`${respone.data.msg}`)
+                    setVisible(true);
                     setLoading(false);
                     props.navigation.replace('TabContainer')
                 } else {
                     setLoading(false);
-                    ToastAndroid.show(`${respone.data.msg}`, ToastAndroid.LONG);
+                    setMessage(`${respone.data.msg}`)
+                    setVisible(true);
                 }
 
             })
-            .catch((error) => { setLoading(false); ToastAndroid.show(`${error}`, ToastAndroid.LONG); console.log(error) })
+            .catch((error) => {
+                setMessage(`${error}`)
+                setVisible(true);
+                setLoading(false);
+            })
     }
 
     return (
@@ -108,7 +117,7 @@ const ChangePassword = props => {
             </View> */}
 
             <View style={styles.bottom}>
-                <KeyboardAwareScrollView style={{  }} showsVerticalScrollIndicator={false}>
+                <KeyboardAwareScrollView style={{ flex: 1, height: "100%" }} showsVerticalScrollIndicator={false}>
 
 
                     <View style={{ marginTop: '5%' }}>
@@ -137,7 +146,7 @@ const ChangePassword = props => {
                             submit && newPassword == "" ? <Text style={styles.errorStyle}>New Password cannot be empty </Text> : null
                         }
                         {
-                            submit ? newPassword.length <= 7 ? <Text style={[styles.errorStyle]}>New Password must be between 8 to 16 characters </Text> : newPassword.length > 16 ? <Text style={[styles.errorStyle]}>New Password must be between 8 to 16 characters </Text> : null : null
+                            submit ? newPassword.length ? newPassword.length <= 7 ? <Text style={[styles.errorStyle]}>New Password must be between 8 to 16 characters </Text> : newPassword.length > 16 ? <Text style={[styles.errorStyle]}>New Password must be between 8 to 16 characters </Text> : null : null : null
                         }
                     </View>
                     <View style={styles.inner}>
@@ -164,7 +173,21 @@ const ChangePassword = props => {
                             // props.navigation.navigate('Booking');
                         }}
                     />
+                    <View style={styles.snackbarContainerStyle}>
+                        <Snackbar
+                            visible={visible}
+                            onDismiss={() => setVisible(!visible)}
+                            action={{
+                                label: 'OK',
+                                onPress: () => {
+                                    console.log("hello")
+                                },
+                            }}>
+                            {message}
+                        </Snackbar>
+                    </View>
                 </KeyboardAwareScrollView>
+
             </View>
         </View>
     );
@@ -174,15 +197,19 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    snackbarContainerStyle: {
+        marginTop: "30%",
+        alignItems: "center"
+    },
     bottom:
     {
-      height: '100%',
-      width: '100%',
-      backgroundColor: Colors.whiteColor,
-      borderTopRightRadius: 35,
-      borderTopLeftRadius: 35,
-      marginTop: '30%',
-      paddingHorizontal: 20
+        height: '100%',
+        width: '100%',
+        backgroundColor: Colors.whiteColor,
+        borderTopRightRadius: 35,
+        borderTopLeftRadius: 35,
+        marginTop: '30%',
+        paddingHorizontal: 20
     },
     text: {
         fontFamily: FontFamily.helveticaBold,
