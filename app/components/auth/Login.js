@@ -89,19 +89,27 @@ const SplashScreen = (props) => {
             email: loginEmail,
             password: loginPassword,
         };
+        console.log(loginDetails)
         AuthServices.userLogin(loginDetails)
             .then(async (res) => {
                 if (res.status == 200) {
+                    console.log(res.data)
                     await AsyncStorage.setItem('Token', JSON.stringify(res.data.userData.tokenInfo))
-                    props.authActions.getUserProfile(res.data.userData.tokenInfo, props.navigation.replace);
+                    await AsyncStorage.setItem('USER', JSON.stringify(res.data.userData.tokenInfo))
+                    let userData = {
+                        id: res.data.userData.userInfo.id,
+                        token: res.data.userData.tokenInfo
+                    }
+                    props.authActions.getUserProfile(userData, props.navigation.replace);
                     // props.navigation.replace("TabContainer");
                     console.log("res :", res.data.userData.tokenInfo);
                 }
-
             })
             .catch((err) => {
+                setLoading(false);
+                console.log(loading)
                 setMessage(`${err}`)
-                setVisible(true); setLoading(false); console.log(err)
+                setVisible(true); console.log(err)
             })
     };
 
@@ -132,8 +140,6 @@ const SplashScreen = (props) => {
             } else {
                 setMessage(`Please check your internet connection and try again`)
                 setVisible(true);
-                // ToastAndroid.show(`Please check your internet connection and try again`, ToastAndroid.LONG)
-
             }
         } catch (error) {
             console.log(error);
@@ -196,7 +202,7 @@ const SplashScreen = (props) => {
             setConfirmPassword(value);
         }
     };
-    
+
     const navigateToNextScreen = () => {
         let data = {
             firstName: first_name,

@@ -13,26 +13,38 @@ import {
   Platform,
   Dimensions
 } from 'react-native';
-import {Colors} from '../../style/colors'
+import { Colors } from '../../style/colors'
 import { authActions } from '../../redux/actions/auth';
 import { connect } from 'react-redux';
 import { bindActionCreators } from "redux";
-const height=Dimensions.get('window').height
+import { AuthServices } from '../../services';
+const height = Dimensions.get('window').height
 const SplashScreen = (props) => {
   useEffect(() => {
     setTimeout(async () => {
       let token = await AsyncStorage.getItem('Token');
+      let user = await AsyncStorage.getItem('USER');
+      let userdata = JSON.parse(user)
       let userToken = JSON.parse(token)
       console.log(userToken)
       if (userToken) {
-        await props.authActions.getUserProfile(userToken, props.navigation.replace);
-        // props.navigation.replace('TabContainer');
+        AuthServices.validateUser(userToken)
+          .then(async (res) => {
+            let userData={
+              id:userdata.id,
+              token:res.data.userData.tokenInfo
+            }
+            console.log(userData)
+            console.log(res.data)
+            await props.authActions.getUserProfile(userData, props.navigation.replace);
+          })
+          .catch((err) => console.log(err))
       } else {
         props.navigation.replace('Login');
       }
     }, 2000);
-  },[]);
- 
+  }, []);
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -68,14 +80,14 @@ const styles = StyleSheet.create({
     height: 300,
     width: 300,
     alignSelf: 'center',
-    marginTop:150
+    marginTop: 150
   },
   text:
   {
-    fontSize:20,
-    color:Colors.whiteColor,
-    fontWeight:'400',
-    marginTop:height>667?'80%':'65%'
+    fontSize: 20,
+    color: Colors.whiteColor,
+    fontWeight: '400',
+    marginTop: height > 667 ? '80%' : '65%'
 
   }
 

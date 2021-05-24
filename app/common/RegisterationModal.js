@@ -35,7 +35,7 @@ const RegisterationModal = ({modalVisible,setModalVisible,navigation}) => {
        <Image source={require('../assets/lifetime.png')} style={styles.image} />
        <Text style={styles.text}>Thank you for the registeration</Text>
        <Text style={styles.text1}>You will be notified via email, once your profile has been approved. Thank you for your patience.</Text>
-     <Button onPress={()=>{setModalVisible(false), navigation.navigate('Login')}} flag={true} text={'Ok'}/>
+     <Button onPress={()=>{setModalVisible(false), navigation.navigate('EmailSent')}} flag={true} text={'Ok'}/>
     
       </View>
     </Modal>

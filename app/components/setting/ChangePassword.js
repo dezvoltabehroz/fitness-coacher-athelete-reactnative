@@ -187,7 +187,6 @@ const ChangePassword = props => {
                         </Snackbar>
                     </View>
                 </KeyboardAwareScrollView>
-
             </View>
         </View>
     );

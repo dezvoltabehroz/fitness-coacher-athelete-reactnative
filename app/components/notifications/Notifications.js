@@ -14,11 +14,16 @@ import {
   Dimensions,
   FlatList
 } from 'react-native';
+import { NotificationServices } from '../../services';
 import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy'
-import NotificationCard from './NotificationsCard'
+import NotificationCard from './NotificationsCard';
+import { connect } from 'react-redux';
 const height = Dimensions.get('window').height
 const NotificationsScreen = (props) => {
+  useEffect(() => {
+    getNotifications();
+  }, [])
   const [data, setdata] = useState([
     {
       type: 'completed_booking',
@@ -45,6 +50,18 @@ const NotificationsScreen = (props) => {
       message: 'Alex Bold left a 5 star review'
     }
   ])
+
+  const getNotifications = () => {
+    NotificationServices.getNotifications(props?.token)
+      .then((res) => {
+        console.log(res.data)
+        setdata(res.data.notifications)
+      })
+      .catch((err) => console.log(err))
+  }
+
+console.log("props?.user : ",props?.token)
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -53,18 +70,23 @@ const NotificationsScreen = (props) => {
         backgroundColor={'transparent'}
       />
       <ScrollView style={styles.bottom}>
-        <FlatList
-          data={data}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => {
-            return (
-              <NotificationCard item={item} navigation={props.navigation}  />
+        {data.length == 0 ?
+          <View style={{ marginTop: 200, justifyContent: "center", alignItems: "center" }}>
+            <Text>No notification found!</Text>
+          </View>
+          :
+          <FlatList
+            data={data}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => {
+              return (
+                <NotificationCard item={item} navigation={props.navigation} />
 
-            )
-          }}
-        />
-        <View style={{height:20}}></View>
+              )
+            }}
+          />}
+        <View style={{ height: 20 }}></View>
       </ScrollView>
 
     </View>
@@ -83,9 +105,13 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 35,
     marginTop: '22%',
     paddingHorizontal: 20,
-    paddingTop:10
+    paddingTop: 10
   },
 
 });
 
-export default NotificationsScreen;
+const mapStateToProps = (state) => ({
+  user: state.authReducer.userData || {},
+  token: state.authReducer.userToken || {}
+});
+export default connect(mapStateToProps)(NotificationsScreen);

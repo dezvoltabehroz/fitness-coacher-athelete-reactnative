@@ -7,12 +7,10 @@ import { AuthServices, RegisterUser } from '../../services';
 import { Alert, Linking, Platform, ToastAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const setUserProfile = (userData, navigate) => {
+const setUserProfile = (userData, token, navigate) => {
     return async (dispatch) => {
-        let token = await AsyncStorage.getItem('Token')
-        let data = JSON.parse(token)
         if (userData) {
-            await dispatch({ type: USER_LOGIN_SUCCESS, userData: userData, userToken: data, loading: false });
+            await dispatch({ type: USER_LOGIN_SUCCESS, userData: userData, userToken: token, loading: false });
             if (navigate != null)
                 navigate('TabContainer');
         }
@@ -28,9 +26,9 @@ const getUserProfile = (userData, navigate) => {
         AuthServices.getUserProfile(userData)
             .then(async (responseData) => {
                 if (responseData.data.success) {
-                    console.log(responseData.data.user)
-                    await AsyncStorage.setItem('USER', JSON.stringify(responseData.data.user))
-                    await dispatch(setUserProfile(responseData.data.user, navigate))
+                    console.log(responseData.data.athleteDetails)
+                    await AsyncStorage.setItem('USER', JSON.stringify(responseData.data.athleteDetails))
+                    await dispatch(setUserProfile(responseData.data.athleteDetails, userData.token, navigate))
                 }
                 else {
                     dispatch(removeUser(navigate));
@@ -48,7 +46,7 @@ const removeUser = (navigate) => {
         await navigate('Login')
         await AsyncStorage.removeItem('Token');
         await AsyncStorage.removeItem('USER');
-        
+
     }
 };
 

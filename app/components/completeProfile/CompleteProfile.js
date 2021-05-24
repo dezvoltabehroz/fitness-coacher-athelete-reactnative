@@ -162,15 +162,12 @@ const CompleteProfile = ({ navigation, route }) => {
             ageGroup: ageGroup,
         };
         console.log("userdata is", userData);
-        // navigation.navigate("EmailSent");
 
         AuthServices.userRegister(userData)
             .then(response => {
                 if (response.data.success != undefined && response.data.success == true) {
                     console.log("response", response);
                     setModalVisible(!modalVisible)
-
-                    // navigation.navigate("EmailSent");
                 } else {
                     console.log("error in service");
                 }
@@ -292,33 +289,7 @@ const CompleteProfile = ({ navigation, route }) => {
                         Address cannot be empty
                     </Text>
                 )}
-                {/* <Text style={styles.text}>Phone</Text>
 
-                <View style={styles.outerView}>
-                    <View style={styles.dropDown}>
-                        <PhoneInput
-                            ref={phoneRef}
-                            onPressFlag={() => setCountryModal(!countryModal)}
-                            autoFormat={true}
-                            allowZeroAfterCountryCode={false}
-                            textStyle={{
-                                marginTop: 2,
-                                lineHeight: 25,
-                                // fontFamily: 'Nunito-Regular',
-                                fontSize: 14,
-                                color: 'black',
-                            }}
-                            returnKeyType="next"
-                            // blur={() => this.disabled()}
-                            onChangePhoneNumber={(phonenumber) => { console.log(phonenumber); setPhoneNumber(phonenumber) }}
-                            value={phoneNumber}
-                            textProps={{
-                                placeholder: 'Phone Number',
-                                placeholderTextColor: "grey",
-                            }}
-                        />
-                    </View>
-                </View> */}
                 <Input
                     full={true}
                     text={"Phone"}
@@ -336,89 +307,6 @@ const CompleteProfile = ({ navigation, route }) => {
 
 
 
-                {/* <Text style={styles.text}>Athlete Sport</Text>
-                <View style={styles.outerView}>
-                    <View style={[styles.innerView, { borderColor: checked == 'baseBall' ? Colors.blackColor : Colors.textColor }]}>
-                        <RadioButton
-                            color={Colors.blackColor}
-                            uncheckedColor={Colors.blackColor}
-                            value="baseall"
-                            status={checked === 'baseBall' ? 'checked' : 'unchecked'}
-                            onPress={() => setChecked('baseBall')}
-                        />
-                        <Text style={styles.innertext}>Baseball</Text>
-
-                    </View>
-                    <View style={[styles.innerView, { borderColor: checked == 'softBall' ? Colors.blackColor : Colors.textColor }]}>
-                        <RadioButton
-                            color={Colors.blackColor}
-                            uncheckedColor={Colors.blackColor}
-                            value="softBall"
-                            status={checked === 'softBall' ? 'checked' : 'unchecked'}
-                            onPress={() => setChecked('softBall')}
-                        />
-                        <Text style={styles.innertext}>Softball</Text>
-                    </View>
-                </View>
-                <Text style={[styles.text, { marginTop: 15 }]}>Skill Level</Text>
-                <View style={styles.outerView}>
-                    <View style={[styles.innerView1, { width: '35%' }]}>
-                        <RadioButton
-                            size={20}
-                            color={Colors.blackColor}
-                            uncheckedColor={Colors.blackColor}
-                            value="recreational"
-                            status={skillLevel === 'recreational' ? 'checked' : 'unchecked'}
-                            onPress={() => setSkillLevel('recreational')}
-                        />
-                        <Text style={styles.innertext}>Recreational</Text>
-
-                    </View>
-                    <View style={[styles.innerView1, { width: '28%' }]}>
-                        <RadioButton
-                            color={Colors.blackColor}
-                            uncheckedColor={Colors.blackColor}
-                            value="travel"
-                            status={skillLevel === 'travel' ? 'checked' : 'unchecked'}
-                            onPress={() => setSkillLevel('travel')}
-                        />
-                        <Text style={styles.innertext}>Travel</Text>
-                    </View>
-                    <View style={[styles.innerView1]}>
-                        <RadioButton
-                            color={Colors.blackColor}
-                            uncheckedColor={Colors.blackColor}
-                            value="collegiate"
-                            status={skillLevel === 'collegiate' ? 'checked' : 'unchecked'}
-                            onPress={() => setSkillLevel('collegiate')}
-                        />
-                        <Text style={styles.innertext}>Collegiate</Text>
-                    </View>
-                </View>
-                <View style={[styles.outerView1]}>
-                    <View style={[styles.innerView1]}>
-                        <RadioButton
-                            size={20}
-                            color={Colors.blackColor}
-                            uncheckedColor={Colors.blackColor}
-                            value="division"
-                            status={skillLevel === 'division' ? 'checked' : 'unchecked'}
-                            onPress={() => setSkillLevel('division')}
-                        />
-                        <Text style={styles.innertext}>Division-1</Text>
-
-                    </View>
-                    <View style={[styles.innerView1, { marginLeft: 10 }]}>
-                        <RadioButton
-                            color={Colors.blackColor}
-                            uncheckedColor={Colors.blackColor}
-                            value="professional"
-                            status={skillLevel === 'professional' ? 'checked' : 'unchecked'}
-                            onPress={() => setSkillLevel('professional')}
-                        />
-                        <Text style={styles.innertext}>professional</Text>
-                    </View>
-                </View> */}
                 <Text style={[styles.text, { marginTop: 15 }]}> Age Group</Text>
                 <FlatList
                     data={arr}
@@ -451,15 +339,14 @@ const CompleteProfile = ({ navigation, route }) => {
                 {submit == true && ageGroup == "" && (
                     <Text style={styles.errorStyle}>  Please select age group</Text>
                 )}
-                <Button text={'Register'} onPress={() => {
-                    checkNetwork()
-                    //  setModalVisible(!modalVisible)
-                }} />
+                <Button text={'Register'} onPress={() => { checkNetwork() }} />
                 <View style={{ marhinBottom: 20 }}></View>
             </ScrollView>
-            <RegisterationModal modalVisible={modalVisible} setModalVisible={setModalVisible} navigation={navigation} />
+            <RegisterationModal
+             modalVisible={modalVisible}
+              setModalVisible={setModalVisible} 
+              navigation={navigation} />
             <CountryPicker
-                // countryCodes={['PK']}
                 theme={styles.themeText}
                 withFilter={true}
                 visible={countryModal}
@@ -496,7 +383,7 @@ const styles = StyleSheet.create({
     snackbarContainerStyle: {
         bottom: '10%',
         alignItems: "center"
-      },
+    },
     bottom:
     {
         height: '100%',

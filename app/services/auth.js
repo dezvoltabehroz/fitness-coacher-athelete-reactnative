@@ -17,8 +17,9 @@ const Api = {
             password: userData.password
         }, config)
     },
-    getUserProfile: function (token) {
-        return axiosInstance.get('user/current', configToken(token))
+    getUserProfile: function (userData) {
+        console.log(userData)
+        return axiosInstance.get(`athlete/details/${userData.id}`, configToken(userData.token))
     },
     updateProfile: function (id, userData, token) {
         return axiosInstance.put(`athlete/update/${id}`, userData, configToken(token))
@@ -57,8 +58,10 @@ const Api = {
     },
     addFCMToken: function () {
         return axiosInstance.post(`user/addFCMToken`, userData, configToken(token))
+    },
+    validateUser: function (token) {
+        return axiosInstance.post(`validation`, {}, configToken(token))
     }
-
 };
 
 export default Api;

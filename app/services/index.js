@@ -7,5 +7,5 @@ export const BookingServices = _booking;
 import _payments from './payments';
 export const PaymentServices = _payments;
 
-import _trainingCategory from './trainingCategory';
-export const TrainingCategoryServices = _trainingCategory;
+import _notifications from './notification';
+export const NotificationServices = _notifications;
