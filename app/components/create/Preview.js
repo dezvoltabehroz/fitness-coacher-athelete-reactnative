@@ -21,10 +21,44 @@ import Button from '../../common/Button'
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import SuccessRequestModal from '../../common/SuccesRequest'
 import PaymentModal from '../../common/PaymentModal'
+import { BookingServices, PaymentServices } from '../../services';
+import { connect } from 'react-redux';
 const height = Dimensions.get('window').height
 const PreviewScreen = (props) => {
+    let { data } = props.route.params;
     const [modalVisible, setModalVisible] = useState(false)
-    const[ successModalVisible,setSuccessModalVisible]=useState(false)
+    const [successModalVisible, setSuccessModalVisible] = useState(false)
+
+    const handlePostRequest = () => {
+        let userData = {
+            "coachAgeGroup": data.ageGroup,
+            "TrainingTypeId": data.instructor.id,
+            "TrainingSubCategoryId": data.instruction.id,
+            "AthleteId": props?.user?.id,
+            "SkillId": data.skill.id,
+            "file": "https://www.youtube.com/watch?v=EngW7tLk6R8",
+            "notes": data.note
+        }
+        console.log(userData)
+        BookingServices.createRequest(userData, props?.token)
+            .then((res) => {
+                console.log(res.data)
+                let data = {
+                    "status": "succeeded",
+                    "RequestId": res.data.result.RequestId
+                }
+                PaymentServices.changeStatusAndSendRequestToCoach(data, props?.token)
+                    .then((response) => {
+                        console.log(response.data)
+                        if (response.data.success) {
+                            setSuccessModalVisible(true)
+                        }
+                    })
+                    .catch((err) => {console.log("second errror : ",err)})
+            })
+            .catch((err) => console.log("first errror : ",err))
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar
@@ -34,36 +68,39 @@ const PreviewScreen = (props) => {
             />
             <ScrollView style={styles.bottom}>
                 <View style={styles.mainView}>
-                    <Text style={styles.text}>Sports Time</Text>
-                    <Text style={styles.text1}>Baseball</Text>
+                    <Text style={styles.text}>Category</Text>
+                    <Text style={styles.text1}>{data.instructor.title}</Text>
                 </View>
                 <View style={styles.mainView}>
-                    <Text style={styles.text}>Category</Text>
-                    <Text style={styles.text1}>Hitting, pitching, Catcher</Text>
+                    <Text style={styles.text}>Instruction type</Text>
+                    <Text style={styles.text1}>{data.instruction.title}</Text>
+                </View>
+                <View style={styles.mainView}>
+                    <Text style={styles.text}>Skill Type</Text>
+                    <Text style={styles.text1}>{data.skill.skill}</Text>
                 </View>
                 <View style={styles.mainView}>
                     <Text style={styles.text}>Age Group</Text>
-                    <Text style={styles.text1}>18+</Text>
+                    <Text style={styles.text1}>{data.ageGroup}</Text>
                 </View>
-                <View style={styles.mainView}>
+                {/* <View style={styles.mainView}>
                     <Text style={styles.text}>Instruction type</Text>
                     <Text style={styles.text1}>Dartfish Ananlytics</Text>
                 </View>
                 <View style={styles.mainView}>
                     <Text style={styles.text}>Dartfish Analytics</Text>
                     <Text style={styles.text1}>Infield, Outfield, Catching</Text>
-                </View>
+                </View> */}
                 <Text style={styles.text}>Video</Text>
                 <Image style={styles.video} source={require('../../assets/splash.jpg')} />
                 <Text style={styles.text}>Notes</Text>
-                <Text style={styles.text1}>This is the example text. This is the example text. This is the example text. This is the example text
-       </Text>
-                <Button text={'Post Request'} onPress={()=>{setModalVisible(true)}} />
-                <TouchableOpacity style={styles.button} onPress={()=>{props.navigation.goBack()}}>
+                <Text style={styles.text1}>{data.note}</Text>
+                <Button text={'Post Request'} onPress={() => { setModalVisible(true) }} />
+                <TouchableOpacity style={styles.button} onPress={() => { props.navigation.goBack() }}>
                     <Text style={styles.text}>Go Back & Edit</Text>
                 </TouchableOpacity>
             </ScrollView>
-            <PaymentModal navigation={props.navigation} setModalVisible={setModalVisible} modalVisible={modalVisible} setSuccessModalVisible={setSuccessModalVisible} />
+            <PaymentModal onPress={() => handlePostRequest()} navigation={props.navigation} setModalVisible={setModalVisible} modalVisible={modalVisible} setSuccessModalVisible={setSuccessModalVisible} />
             <SuccessRequestModal navigation={props.navigation} setSuccessModalVisible={setSuccessModalVisible} successModalVisible={successModalVisible} />
 
         </View>
@@ -127,5 +164,9 @@ const styles = StyleSheet.create({
     }
 
 });
+const mapStateToProps = (state) => ({
+    user: state.authReducer.userData || {},
+    token: state.authReducer.userToken || {}
+});
+export default connect(mapStateToProps)(PreviewScreen);
 
-export default PreviewScreen;

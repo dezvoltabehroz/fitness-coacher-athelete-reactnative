@@ -17,17 +17,41 @@ import {
 import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy'
 import { Switch } from 'react-native-paper';
-
+import { NotificationServices } from '../../services';
+import { connect } from 'react-redux';
+import { authActions } from '../../redux/actions/auth';
+import { bindActionCreators } from "redux";
 const height = Dimensions.get('window').height
 const NotificatinsSettings = (props) => {
   const [isSwitchOn, setIsSwitchOn] = React.useState(false);
-  const [isSwitchOn1, setIsSwitchOn1] = React.useState(false);
+  const [isSwitchOn1, setIsSwitchOn1] = React.useState(props?.user?.notification);
   const [isSwitchOn2, setIsSwitchOn2] = React.useState(false);
 
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
   const onToggleSwitch1 = () => setIsSwitchOn1(!isSwitchOn1);
   const onToggleSwitch2 = () => setIsSwitchOn2(!isSwitchOn2);
 
+  const handleNotificationSetting = () => {
+    let userData = {
+      "UserId": props.user.id,
+      "notification": !isSwitchOn1
+    }
+    NotificationServices.notificationSetting(userData, props.token)
+      .then(async(res) => {
+        if (res.data.success) {
+          onToggleSwitch1()
+          let data = {
+            id: props?.user.id,
+            token: props?.token
+          }
+          await props.authActions.getUserProfile(data, props.navigation.replace)
+        }
+        else {
+          console.log(res.data)
+        }
+      })
+      .catch((err) => console.log(err))
+  }
   return (
     <View style={styles.container}>
       <StatusBar
@@ -49,7 +73,7 @@ const NotificatinsSettings = (props) => {
             <Text style={styles.text}>Push Notifications</Text>
           </View>
           <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
-            value={isSwitchOn1} onValueChange={onToggleSwitch1} color={Colors.buttonColor} />
+            value={isSwitchOn1} onValueChange={() => handleNotificationSetting()} color={Colors.buttonColor} />
         </View>
         <View style={styles.inner}>
           <View>
@@ -107,4 +131,16 @@ const styles = StyleSheet.create({
 
 });
 
-export default NotificatinsSettings;
+const mapStateToProps = (state) => {
+  return {
+    user: state.authReducer.userData || {},
+    token: state.authReducer.userToken
+  };
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    authActions: bindActionCreators(authActions, dispatch)
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(NotificatinsSettings);

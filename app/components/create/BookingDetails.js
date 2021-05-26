@@ -15,26 +15,66 @@ import {
     TextInput
 } from 'react-native';
 import { Colors } from '../../style/colors'
-import { RadioButton, Checkbox } from 'react-native-paper';
+import { RadioButton, Checkbox, Snackbar } from 'react-native-paper';
 import { FontFamily } from '../../style/typograpy'
 import Button from '../../common/Button'
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import DetailsModal from '../../common/DetailsModal'
 import { Container, Header, Content, Tab, Tabs } from 'native-base';
-
+import { BookingServices } from '../../services';
+import { connect } from 'react-redux';
+import moment from 'moment';
 const height = Dimensions.get('window').height
 const BookingDetails = (props) => {
-    const [modalVisible, setModalVisible] = useState(false)
-    useEffect(()=>{
-        if(props.route.params!=undefined)
-        {
-        const {flag}=props?.route?.params
-        if(flag)
-        {
-            setModalVisible(true)
+    const [modalVisible, setModalVisible] = useState(false);
+    const [visible, setVisible] = useState(false)
+    const [message, setMessage] = useState("");
+    const [bookingDetails, setBookingDetails] = useState({})
+    const [loading, setLoading] = useState(true)
+    // useEffect(() => {
+    //     if(props.route)
+    //     getBookingDetail();
+
+    // }, [])
+    // useEffect((data) => {
+    //     setBookingDetails(data)
+    // }, [bookingDetails])
+
+    useEffect(() => {
+        setLoading(true)
+    }, [loading])
+    useEffect(() => {
+        setLoading(true)
+        if (props.route.params != undefined) {
+            const { data } = props?.route?.params;
+            console.log(data)
+            setBookingDetails(data)
+            setLoading(false)
         }
+    }, []);
+
+    const getBookingDetail = () => {
+        setLoading(true)
+        BookingServices.getBookingDetails(props?.route?.params?.bookingId, props?.token)
+            .then((response) => {
+                if (response.data.success) {
+                    console.log(response.data)
+                    setBookingDetails(response.data.bookingDetail.rows[0])
+                    setLoading(false)
+                } else {
+                    setMessage(`${response.data.msg}`)
+                    setVisible(true);
+                    setLoading(false)
+                    console.log(response.data)
+                    setModalVisible(false)
+                }
+            })
+            .catch((err) => {
+                setMessage(`${err}`)
+                setLoading(false)
+                setVisible(true); setModalVisible(false); console.log(err)
+            })
     }
-    },[])
     return (
         <View style={styles.container}>
             <StatusBar
@@ -47,7 +87,7 @@ const BookingDetails = (props) => {
                     <TouchableOpacity onPress={() => props.navigation.goBack()}>
                         <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
                     </TouchableOpacity>
-                    <Text style={styles.headertext}>ZIMR MATFIELD - CCH67888</Text>
+                    <Text style={styles.headertext}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName} - {bookingDetails?.coach?.uniqueId}</Text>
                 </View>
                 <TouchableOpacity onPress={() => setModalVisible(true)}>
                     <Image style={styles.headerLeft} source={require('../../assets/menu.png')} />
@@ -61,10 +101,10 @@ const BookingDetails = (props) => {
                         {/* <View style={{ height: 380, backgroundColor: 'red' }}> */}
                         <View style={styles.border}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                                <TouchableOpacity onPress={()=>{props.navigation.navigate('AthleteDetails')}}>
-                                <Image source={require('../../assets/splash.jpg')} style={styles.profile} />
+                                <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails') }}>
+                                    <Image source={require('../../assets/splash.jpg')} style={styles.profile} />
                                 </TouchableOpacity>
-                                <Text style={styles.text1}>Brad Pit</Text>
+                                <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>
                             </View>
                             <View style={styles.mainView}>
                                 <Text style={styles.text1}>Requirements</Text>
@@ -72,24 +112,20 @@ const BookingDetails = (props) => {
                                 {/* <Text style={styles.text1}>Baseball</Text> */}
                             </View>
                             <View style={styles.mainView}>
-                                <Text style={styles.text}>Sports Time</Text>
-                                <Text style={styles.text1}>Baseball</Text>
-                            </View>
-                            <View style={styles.mainView}>
-                                <Text style={styles.text}>Category</Text>
-                                <Text style={styles.text1}>Hitting, pitching, Catcher</Text>
+                                <Text style={styles.text}>Sports</Text>
+                                <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingType?.title}</Text>
                             </View>
                             <View style={styles.mainView}>
                                 <Text style={styles.text}>Age Group</Text>
-                                <Text style={styles.text1}>18+</Text>
+                                <Text style={styles.text1}>{bookingDetails?.athleteRequest?.coachAgeGroup}</Text>
                             </View>
                             <View style={styles.mainView}>
                                 <Text style={styles.text}>Instruction type</Text>
-                                <Text style={styles.text1}>Dartfish Ananlytics</Text>
+                                <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingSubCategory?.title}</Text>
                             </View>
                             <View style={styles.mainView}>
-                                <Text style={styles.text}>Dartfish Analytics</Text>
-                                <Text style={styles.text1}>Infield, Outfield, Catching</Text>
+                                <Text style={styles.text}>Skill type</Text>
+                                <Text style={styles.text1}>{bookingDetails?.athleteRequest?.subCategorySkill?.skill}</Text>
                             </View>
                             <Text style={[styles.text, { marginLeft: 10 }]}>Video</Text>
                             <Image style={styles.video} source={require('../../assets/splash.jpg')} />
@@ -100,19 +136,32 @@ const BookingDetails = (props) => {
                         textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
                         <View style={[styles.mainView, { marginTop: 10 }]}>
                             <Text style={styles.text}>Mobile Phone</Text>
-                            <Text style={styles.text1}>+92 3333 3333333</Text>
+                            <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
                         </View>
                         <View style={styles.mainView}>
-                    <Text style={styles.text}>Email</Text>
-                    <Text style={styles.text1}>xyz@gmail.com</Text>
-                </View>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Whatsapp</Text>
-                    <Text style={styles.text1}>+92 3333 3333333</Text>
-                </View>
+                            <Text style={styles.text}>Email</Text>
+                            <Text style={styles.text1}>{bookingDetails?.coach?.email}</Text>
+                        </View>
+                        <View style={styles.mainView}>
+                            <Text style={styles.text}>Whatsapp</Text>
+                            <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
+                        </View>
                     </Tab>
                 </Tabs>
 
+            </View>
+            <View style={styles.snackbarContainerStyle}>
+                <Snackbar
+                    visible={visible}
+                    onDismiss={() => setVisible(!visible)}
+                    action={{
+                        label: 'OK',
+                        onPress: () => {
+                            console.log("hello")
+                        },
+                    }}>
+                    {message}
+                </Snackbar>
             </View>
             <DetailsModal setModalVisible={setModalVisible} modalVisible={modalVisible} navigation={props.navigation} />
         </View>
@@ -122,6 +171,9 @@ const BookingDetails = (props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    snackbarContainerStyle: {
+        alignItems: "center"
     },
     bottom:
     {
@@ -143,6 +195,7 @@ const styles = StyleSheet.create({
     },
     headertext:
     {
+        textTransform:'uppercase',
         fontFamily: FontFamily.helveticaBold,
         fontSize: 16,
         marginLeft: 20
@@ -251,5 +304,9 @@ const styles = StyleSheet.create({
 
 
 });
+const mapStateToProps = (state) => ({
+    user: state.authReducer.userData || {},
+    token: state.authReducer.userToken || {}
+});
 
-export default BookingDetails
+export default connect(mapStateToProps)(BookingDetails)

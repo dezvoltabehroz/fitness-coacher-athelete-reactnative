@@ -25,14 +25,15 @@ const SplashScreen = (props) => {
       let token = await AsyncStorage.getItem('Token');
       let user = await AsyncStorage.getItem('USER');
       let userdata = JSON.parse(user)
+      console.log("userdata", userdata)
       let userToken = JSON.parse(token)
       console.log(userToken)
-      if (userToken) {
+      if (userToken && userdata) {
         AuthServices.validateUser(userToken)
           .then(async (res) => {
-            let userData={
-              id:userdata.id,
-              token:res.data.userData.tokenInfo
+            let userData = {
+              id: userdata.id,
+              token: res.data.userData.tokenInfo
             }
             console.log(userData)
             console.log(res.data)

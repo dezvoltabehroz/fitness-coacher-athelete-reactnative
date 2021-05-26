@@ -9,3 +9,6 @@ export const PaymentServices = _payments;
 
 import _notifications from './notification';
 export const NotificationServices = _notifications;
+
+import _trainingCategory from './trainingCategory';
+export const TrainingCategoryServices = _trainingCategory;

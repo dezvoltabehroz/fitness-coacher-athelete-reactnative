@@ -35,7 +35,7 @@ const SuccessRequestModal = ({successModalVisible,setSuccessModalVisible,navigat
        <Image source={require('../assets/lifetime.png')} style={styles.image} />
        <Text style={styles.text}>New Booking Request Is Live</Text>
        <Text style={styles.text1}>Your Booking has been approved, Hold on while we connect you to a coach</Text>
-     <Button onPress={()=>{setSuccessModalVisible(false), navigation.navigate("Booking")}}  text={'Return to Home'}/>
+     <Button onPress={()=>{setSuccessModalVisible(false), navigation.replace("Booking")}}  text={'Return to Home'}/>
     
       </View>
     </Modal>

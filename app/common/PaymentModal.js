@@ -18,7 +18,7 @@ import Modal from 'react-native-modal';
 import { Col } from 'native-base';
 import Button from './Button';
 const height = Dimensions.get('window').height;
-const PaymentModal = ({ modalVisible, setModalVisible, navigation ,setSuccessModalVisible}) => {
+const PaymentModal = ({ modalVisible, setModalVisible,onPress, navigation ,setSuccessModalVisible}) => {
   return (
     <Modal
       style={styles.modal}
@@ -37,7 +37,7 @@ const PaymentModal = ({ modalVisible, setModalVisible, navigation ,setSuccessMod
         <Text style={styles.text}>Payment Confirmation</Text>
         <Text style={styles.text1}>You will be charged $219.75 for this booking.</Text>
         <View style={styles.buttonView}>
-          <TouchableOpacity style={styles.button} onPress={() => { setModalVisible(false), setSuccessModalVisible(true) }}>
+          <TouchableOpacity style={styles.button} onPress={() => { onPress(); setModalVisible(false)  }}>
             <Text style={styles.buttontext}>Confirm Payment</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button1} onPress={() => { setModalVisible(false) }}>

@@ -12,7 +12,7 @@ let configToken = (token) => {
 }
 const Api = {
     changeStatusAndSendRequestToCoach:function (userData, token) {
-        return axiosInstance.get(`athlete/changePaymentStatus`, userData, configToken(token))
+        return axiosInstance.post(`athlete/changePaymentStatus`, userData, configToken(token))
     },
 };
 

@@ -41,7 +41,7 @@ const AccountSettingsScreen = (props) => {
   const [first_name, setFirstname] = useState(props?.user?.firstName);
   const [last_name, setLastname] = useState(props?.user?.lastName);
   const [email, setEmail] = useState(props?.user?.email)
-  const [ageGroup, setAgeGroup] = useState('')
+  const [ageGroup, setAgeGroup] = useState(props?.user?.ageGroupAthlete)
   const [modalVisible, setModalVisible] = useState(false)
   const [date, setDate] = useState(props?.user?.dob)
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -51,13 +51,14 @@ const AccountSettingsScreen = (props) => {
   const [address, setAddress] = useState(props?.user?.address);
   const [submit, setSubmit] = useState(false)
   const [checkAgeGroup, setCheckAgeGroup] = useState(false);
-  const [image, setImage] = useState('')
+  const [image, setImage] = useState(props?.user?.imageUrl)
   const phoneRef = React.createRef(null);
   const [visible, setVisible] = useState(false)
   const [message, setMessage] = useState("")
+  const [loading, setLoading] = useState(false)
   const [arr, setArr] = useState([
     {
-      flag: true,
+      flag: false,
       age: "Under-9",
     },
     {
@@ -77,6 +78,15 @@ const AccountSettingsScreen = (props) => {
       age: "18+",
     },
   ]);
+  useEffect(() => {
+    let data = [...arr];
+    data.forEach((item, index) => {
+      if (item.age == ageGroup) {
+        data[index].flag = true;
+      }
+      setArr(data)
+    })
+  }, [])
 
   const [prev, setPrev] = useState(0);
 
@@ -111,6 +121,13 @@ const AccountSettingsScreen = (props) => {
     setShowDatePicker(!showDatePicker);
   };
 
+  useEffect(() => {
+    setSubmit(true)
+  }, [submit]);
+  useEffect(() => {
+    setSubmit(true)
+  }, [loading]);
+
   const handleConfirm = (selectedDate) => {
     var date = moment(selectedDate).format('YYYY-MM-DD')
     setDate(date);
@@ -119,32 +136,31 @@ const AccountSettingsScreen = (props) => {
 
 
   const checkNetwork = async () => {
-    await setSubmit(true)
-    console.log(submit)
-    console.log("internet called");
+    setSubmit(true)
+    setLoading(true)
     try {
       let state = await NetInfo.fetch();
       if (state.isConnected == true) {
-        // call your function here
         checkValidations();
-        // getAtheleteDetails();
       } else {
         setMessage(`Please check your internet connection and try again`)
         setVisible(true);
+        setLoading(false)
       }
     } catch (error) {
       console.log(error);
+      setLoading(false)
       return null;
     }
   };
 
   const checkValidations = () => {
-    setSubmit(true)
     console.log(submit)
     if (ageGroup && submit && country && address && phoneNumber && date && isPhoneValid(phoneNumber) && first_name && last_name) {
       getAtheleteDetails();
     } else {
-      setSubmit(true);
+      setSubmit(true)
+      setLoading(false)
       console.log(submit)
     }
   };
@@ -169,14 +185,19 @@ const AccountSettingsScreen = (props) => {
     // navigation.navigate("EmailSent");
 
     AuthServices.updateProfile(props?.user?.id, userData, props?.token)
-      .then(response => {
+      .then(async (response) => {
         if (response.data.success != undefined && response.data.success == true) {
-          console.log("response", response);
-          setModalVisible(!modalVisible)
-
-          // navigation.navigate("EmailSent");
+          console.log("response", response.data);
+          let data = {
+            id: response.data.user.id,
+            token: props?.token
+          }
+          setLoading(false)
+          await props.authActions.getUserProfile(data, props.navigation.replace)
+          // navigation.navigate("Booking");
         } else {
-          console.log("error in service");
+          setMessage(`${response.data.msg}`)
+          setVisible(true);
         }
       })
       .catch((error) => {
@@ -354,7 +375,7 @@ const AccountSettingsScreen = (props) => {
         {submit == true && ageGroup == "" && (
           <Text style={styles.errorStyle}>  Please select age group</Text>
         )}
-        <Button text={'Update'} onPress={() => { checkNetwork() }} />
+        <Button loading={loading} text={'Update'} onPress={async () => { await checkNetwork() }} />
         <View style={{ marginTop: 20 }}></View>
       </ScrollView>
       <CountryPicker

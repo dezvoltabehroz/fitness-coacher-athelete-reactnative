@@ -43,56 +43,40 @@ const BookingScreen = (props) => {
       .then((response) => {
         // alert("success");
         if (response.data.success) {
-          let arr = Array(10);
           setLoading(false)
-          // setBookings(response.data.coursesDetail.rows);
-          setBookings(arr);
-          console.log("booking details are", bookings);
+          setBookings(response.data.coursesDetail.rows);
         }
         else {
           setMessage(`${response.data.msg}`)
           setVisible(true);
           setLoading(false)
         }
-
       })
       .catch((error) => {
-        let arr = Array(6);
-
         setMessage(`${error}`)
         setVisible(true);
         setLoading(false)
-        setBookings(arr);
-        console.log("error =", error);
       });
   };
 
   const getCompletedBookings = async () => {
     setLoading(true)
-    // console.log("booking details are", state.bookingDetails);
     BookingServices.completedBookings(props?.user?.id, props?.token)
       .then((response) => {
-        // alert("success");
         if (response.data.success) {
-          let arr = Array(10);
           setLoading(false)
-          setCompletedBookings(arr);
-          console.log("booking details are", bookings);
+          setCompletedBookings(response.data.coursesDetail.rows);
         }
         else {
           setMessage(`${response.data.msg}`)
           setVisible(true);
           setLoading(false)
         }
-
       })
       .catch((error) => {
         setMessage(`${error}`)
         setVisible(true);
-        let arr = Array(3);
         setLoading(false)
-        setCompletedBookings(arr);
-        console.log("error =", error);
       });
   };
 
@@ -112,7 +96,8 @@ const BookingScreen = (props) => {
             <Image source={require('../../assets/add.png')} style={styles.image1} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { props.navigation.navigate("AccountSettings") }}>
-            <Image source={require('../../assets/splash.jpg')} style={styles.image} />
+            <Image source={props?.user?.imageUrl != null ? { uri: props?.user?.imageUrl } : require('../../assets/splash.jpg')}
+              resizeMode="contain" style={styles.image} />
           </TouchableOpacity>
 
         </View>
@@ -133,29 +118,39 @@ const BookingScreen = (props) => {
             </View>
             :
             active ?
-              <FlatList
-                data={bookings}
-                contentContainerStyle={{ paddingBottom: "30%" }}
-                showsVerticalScrollIndicator={false}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => {
-                  return (
-                    <BookingCard navigation={props.navigation} active={active} />
-                  )
-                }}
-              />
+              bookings.length == 0 ?
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                  <Text>No Bookings Found</Text>
+                </View>
+                :
+                <FlatList
+                  data={bookings}
+                  contentContainerStyle={{ paddingBottom: "30%" }}
+                  showsVerticalScrollIndicator={false}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <BookingCard item={item} navigation={props.navigation} active={active} />
+                    )
+                  }}
+                />
               :
-              <FlatList
-                data={completedBookings}
-                contentContainerStyle={{ paddingBottom: "30%" }}
-                showsVerticalScrollIndicator={false}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => {
-                  return (
-                    <BookingCard navigation={props.navigation} active={false} />
-                  )
-                }}
-              />
+              completedBookings.length == 0 ?
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                  <Text>No Bookings Found</Text>
+                </View>
+                :
+                <FlatList
+                  data={completedBookings}
+                  contentContainerStyle={{ paddingBottom: "30%" }}
+                  showsVerticalScrollIndicator={false}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <BookingCard item={item} navigation={props.navigation} active={false} />
+                    )
+                  }}
+                />
         }
       </View>
       <View style={styles.snackbarContainerStyle}>
@@ -227,15 +222,10 @@ const styles = StyleSheet.create({
 
 });
 const mapStateToProps = (state) => ({
-  user: state.authReducer,
+  user: state.authReducer.userData,
+  token: state.authReducer.userToken
 
 });
-
-const mapDispatchToProps = dispatch => {
-  return {
-    authActions: bindActionCreators(authActions, dispatch)
-  };
-};
 
 export default connect(
   mapStateToProps

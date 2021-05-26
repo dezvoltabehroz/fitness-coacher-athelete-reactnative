@@ -22,14 +22,13 @@ import CompleteProfile from '../components/completeProfile/CompleteProfile'
 import EmailSent from "../components/completeProfile/EmailSent";
 import ForgotPassword from "../components/completeProfile/ForgotPasswordScreen";
 import ResetPassword from "../components/completeProfile/ResetPasswordScreen";
-
 import BookingScreen from '../components/booking/Booking'
 import NotificationsScreen from '../components/notifications/Notifications'
 import CreateScreen from '../components/create/Create'
 import ProfileScreen from '../components/profile/Profile'
 import SettingsScreen from '../components/setting/Settings'
 import AccountSettings from '../components/setting/AccountSettings'
-import ChangePassword from '../components/setting/ChangePassword'
+import ChangePassword from '../components/setting/ChangePassword';
 import NottificatiosSettings from '../components/setting/NotificationsSettings'
 import Preview from '../components/create/Preview'
 import BookingDetails from '../components/create/BookingDetails'
@@ -153,6 +152,15 @@ function BookingStack() {
         headerTitleAllowFontScaling: true,
         headerTransparent: true,
         headerShown: false,
+        headerTitleStyle: {
+          fontFamily: FontFamily.helveticaBold,
+          fontSize: 16,
+        }
+      }} />
+      <Stack.Screen name="ChangePassword" component={ChangePassword} options={{
+        headerTitle: 'CHANGE PASSWORD',
+        headerTitleAllowFontScaling: true,
+        headerTransparent: true,
         headerTitleStyle: {
           fontFamily: FontFamily.helveticaBold,
           fontSize: 16,

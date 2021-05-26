@@ -12,8 +12,11 @@ let configToken = (token) => {
 }
 const Api = {
     getNotifications: function (token) {
-        return axiosInstance.post(`athlete/notification`, configToken(token))
+        return axiosInstance.get(`athlete/notification`, configToken(token))
     },
+    notificationSetting: function (userData, token) {
+        return axiosInstance.post(`user/notificationSetting`, userData, configToken(token))
+    }
 };
 
 export default Api;
