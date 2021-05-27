@@ -181,6 +181,7 @@ const AccountSettingsScreen = (props) => {
       dob: moment(date).format('YYYY-MM-DD'),
       role: 'athlete',
       country: country,
+      imageUrl:image,
       ageGroup: ageGroup,
     };
     console.log("userdata is", userData);
@@ -221,6 +222,28 @@ const AccountSettingsScreen = (props) => {
       async (response) => {
         if (response.error) { }
         else if (response.uri != undefined) {
+          let userData = {
+            fileName: new Date().getTime() + response.fileName,
+            fileType: response.type
+          }
+          console.log("response : ", response);
+          AuthServices.getUrl(userData)
+            .then((res) => {
+              console.log(res.data)
+              let formData = new FormData();
+              formData.append(`${userData.fileName}`, {
+                uri: response.uri,
+                name: `${new Date().getTime().toString()}.jpg`,
+                filename: new Date().getTime().toString() + '.jpg',
+                type: 'image/jpg'
+              })
+              axios.put(res.data.postUrl, formData)
+                .then((responseData) => {
+                  console.log(responseData)
+                  setImage(res.data.getUrl);
+                }).catch((err) => { console.log(err) })
+            })
+            .catch((err) => { console.log(err) })
           setImage(response.uri);
         }
       })
