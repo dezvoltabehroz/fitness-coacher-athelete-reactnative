@@ -6,7 +6,7 @@ export const errorUtils = {
             if (error.response.data && error.response.data.message) {
                 e = error.response.data.message[0].message;
             } else if (error.response.data && error.response.data.msg.message) {
-                e = error.response.data.msg.message;           // my app specific keys override
+                e = error.response.data.msg.message;           
             } else {
                 e = error.response.data.msg;
             }
