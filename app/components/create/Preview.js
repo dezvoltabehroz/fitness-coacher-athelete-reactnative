@@ -23,12 +23,15 @@ import SuccessRequestModal from '../../common/SuccesRequest'
 import PaymentModal from '../../common/PaymentModal'
 import { BookingServices, PaymentServices } from '../../services';
 import { connect } from 'react-redux';
+import { errorUtils } from '../../common/Utilities';
+import Container from '../../common/Container';
 const height = Dimensions.get('window').height
 const PreviewScreen = (props) => {
     let { data } = props.route.params;
     const [modalVisible, setModalVisible] = useState(false)
     const [successModalVisible, setSuccessModalVisible] = useState(false)
-
+    const [message, setMessage] = useState("")
+    const [visible, setVisible] = useState(false)
     const handlePostRequest = () => {
         let userData = {
             "coachAgeGroup": data.ageGroup,
@@ -54,12 +57,21 @@ const PreviewScreen = (props) => {
                             setSuccessModalVisible(true)
                         }
                     })
-                    .catch((err) => {console.log("second errror : ",err)})
+                    .catch((err) => {
+                        setMessage(`${errorUtils.getError(err)}`)
+                        setVisible(true)
+                        console.log("second errror : ", err)
+                    })
             })
-            .catch((err) => console.log("first errror : ",err))
+            .catch((err) => {
+                setMessage(`${errorUtils.getError(err)}`)
+                setVisible(true)
+                console.log("first errror : ", err)
+            })
     }
 
     return (
+        <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
         <View style={styles.container}>
             <StatusBar
                 barStyle="dark-content"
@@ -104,6 +116,7 @@ const PreviewScreen = (props) => {
             <SuccessRequestModal navigation={props.navigation} setSuccessModalVisible={setSuccessModalVisible} successModalVisible={successModalVisible} />
 
         </View>
+        </Container>
     );
 };
 

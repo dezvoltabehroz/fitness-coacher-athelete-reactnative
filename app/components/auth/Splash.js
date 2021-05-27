@@ -18,6 +18,7 @@ import { authActions } from '../../redux/actions/auth';
 import { connect } from 'react-redux';
 import { bindActionCreators } from "redux";
 import { AuthServices } from '../../services';
+import messaging from '@react-native-firebase/messaging';
 const height = Dimensions.get('window').height
 const SplashScreen = (props) => {
   useEffect(() => {
@@ -37,7 +38,8 @@ const SplashScreen = (props) => {
             }
             console.log(userData)
             console.log(res.data)
-            await props.authActions.getUserProfile(userData, props.navigation.replace);
+            requestUserPermission(userData)
+            // await props.authActions.getUserProfile(userData, props.navigation.replace);
           })
           .catch((err) => console.log(err))
       } else {
@@ -45,6 +47,50 @@ const SplashScreen = (props) => {
       }
     }, 2000);
   }, []);
+
+  
+  const requestUserPermission = async function (data) {
+    try {
+      const authStatus = await messaging().hasPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('permission granted');
+        getFcmToken(data);
+      }
+    } catch (error) {
+      // User has rejected permissions
+      console.log('permission rejected');
+    }
+
+  }
+
+  const getFcmToken = async (userData) => {
+    const fcmToken = await messaging().getToken();
+    if (fcmToken) {
+      let data = {
+        id: userData.id,
+        fcmToken: fcmToken,
+        token: userData.token
+      }
+      AuthServices.addFCMToken(data)
+        .then(async (res) => {
+          console.log("res.data :", res.data)
+          if (res.data.status) {
+            await props.authActions.getUserProfile(userData, props.navigation.replace);
+          } else {
+            await props.authActions.getUserProfile(userData, props.navigation.replace);
+            // this.props.actions.removeUser(this.props.navigation.replace)
+          }
+        })
+        .catch((err) => { console.log("err : ", err); props.authActions.removeUser(props.navigation.replace) })
+    } else {
+      console.log("Failed", "No token received");
+    }
+
+  }
 
   return (
     <View style={styles.container}>

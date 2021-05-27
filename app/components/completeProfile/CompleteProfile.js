@@ -31,6 +31,8 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Calendar from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Container from '../../common/Container';
+import { errorUtils } from '../../common/Utilities';
 const height = Dimensions.get('window').height
 const width = Dimensions.get('window').width
 const CompleteProfile = ({ navigation, route }) => {
@@ -159,7 +161,7 @@ const CompleteProfile = ({ navigation, route }) => {
             dob: moment(date).format('YYYY-MM-DD'),
             role: 'athlete',
             country: country,
-            ageGroup: ageGroup,
+            ageGroupAthlete: ageGroup,
         };
         console.log("userdata is", userData);
 
@@ -173,9 +175,8 @@ const CompleteProfile = ({ navigation, route }) => {
                 }
             })
             .catch((error) => {
-                setMessage(`${error}`)
+                setMessage(`${errorUtils.getError(error)}`)
                 setVisible(true);
-                setSubmit(false)
                 console.log(error);
             })
     };
@@ -199,178 +200,168 @@ const CompleteProfile = ({ navigation, route }) => {
 
 
     return (
-        <View style={styles.container}>
-            <StatusBar
-                barStyle="dark-content"
-                translucent
-                backgroundColor={'transparent'}
-            />
-            <ScrollView style={styles.bottom}>
-                <View style={styles.profile}>
-                    {
-                        image ?
-                            <Image source={{ uri: image }} style={styles.avatarStyle} />
-                            :
-                            <Image source={require('../../assets/avatar.png')} style={styles.avatar} />
-                    }
-                    <TouchableOpacity onPress={() => launchGallery()} style={styles.icon}>
+        <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
+            <View style={styles.container}>
+                <StatusBar
+                    barStyle="dark-content"
+                    translucent
+                    backgroundColor={'transparent'}
+                />
+                <ScrollView style={styles.bottom}>
+                    <View style={styles.profile}>
                         {
                             image ?
-                                <Icon name="edit" color="white" size={15} />
+                                <Image source={{ uri: image }} style={styles.avatarStyle} />
                                 :
-                                <Image source={require('../../assets/plus.png')} style={styles.avatar1} />
+                                <Image source={require('../../assets/avatar.png')} style={styles.avatar} />
                         }
-                    </TouchableOpacity>
-                </View>
-                <Text style={styles.text}>Date Of Birth</Text>
-                <View style={styles.outerView}>
-                    <TouchableOpacity
-                        style={styles.dropDown}
-                        onPress={() => {
-                            setShowDatePicker(!showDatePicker)
-                            console.log("showDatePicker: ", showDatePicker)
-                        }}
-                    >
-                        {date != undefined && date != '' ? (
+                        <TouchableOpacity onPress={() => launchGallery()} style={styles.icon}>
+                            {
+                                image ?
+                                    <Icon name="edit" color="white" size={15} />
+                                    :
+                                    <Image source={require('../../assets/plus.png')} style={styles.avatar1} />
+                            }
+                        </TouchableOpacity>
+                    </View>
+                    <Text style={styles.text}>Date Of Birth</Text>
+                    <View style={styles.outerView}>
+                        <TouchableOpacity
+                            style={styles.dropDown}
+                            onPress={() => {
+                                setShowDatePicker(!showDatePicker)
+                                console.log("showDatePicker: ", showDatePicker)
+                            }}
+                        >
+                            {date != undefined && date != '' ? (
 
-                            <Text style={styles.innertext}>{moment(date).format('M / DD / YYYY')}</Text>
-                        ) : (
-                            <Text style={styles.innertext}>- / -- / ----</Text>
-                        )}
-                        <Calendar
-                            name="calendar"
-                            color="grey" size={15}
+                                <Text style={styles.innertext}>{moment(date).format('M / DD / YYYY')}</Text>
+                            ) : (
+                                <Text style={styles.innertext}>- / -- / ----</Text>
+                            )}
+                            <Calendar
+                                name="calendar"
+                                color="grey" size={15}
+                            />
+                        </TouchableOpacity>
+                        <DateTimePickerModal
+                            isVisible={showDatePicker}
+                            onConfirm={(date) => handleConfirm(date)}
+                            onCancel={() => hideDatePicker}
                         />
-                    </TouchableOpacity>
-                    <DateTimePickerModal
-                        isVisible={showDatePicker}
-                        onConfirm={(date) => handleConfirm(date)}
-                        onCancel={() => hideDatePicker}
+                    </View>
+                    {submit == true && date == "" && (
+                        <Text style={styles.errorStyle}>Please select your date of birth</Text>
+                    )}
+
+                    <Text style={styles.text}>Country</Text>
+                    <View style={styles.outerView}>
+                        <TouchableOpacity
+                            style={styles.dropDown}
+                            onPress={() => {
+                                setCountryModal(!countryModal)
+                                console.log("countryModal : ", countryModal)
+                            }}
+                        >
+                            {country != undefined && country != '' ? (
+                                // setCheckInstructorTypes(false)
+                                <Text style={styles.innertext}>{country}</Text>
+                            ) : (
+                                <Text style={styles.innertext}>Select</Text>
+                            )}
+                            <Image
+                                source={require("../../assets/drop-down.png")}
+                                style={styles.dropImage}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                    {submit == true && country == '' && (
+                        <Text style={styles.errorStyle}>Please select a Country</Text>
+                    )}
+                    <Input
+                        full={true}
+                        text={"Address"}
+                        value={address}
+                        onChangeText={(value) => {
+                            setAddress(value);
+                        }}
                     />
-                </View>
-                {submit == true && date == "" && (
-                    <Text style={styles.errorStyle}>Please select your date of birth</Text>
-                )}
+                    {submit == true && address == "" && (
+                        <Text style={styles.errorStyle}>
+                            Address cannot be empty
+                        </Text>
+                    )}
 
-                <Text style={styles.text}>Country</Text>
-                <View style={styles.outerView}>
-                    <TouchableOpacity
-                        style={styles.dropDown}
-                        onPress={() => {
-                            setCountryModal(!countryModal)
-                            console.log("countryModal : ", countryModal)
+                    <Input
+                        full={true}
+                        text={"Phone"}
+                        keyboardType={"number-pad"}
+                        value={phoneNumber}
+                        onChangeText={(value) => {
+                            setPhoneNumber(value);
                         }}
-                    >
-                        {country != undefined && country != '' ? (
-                            // setCheckInstructorTypes(false)
-                            <Text style={styles.innertext}>{country}</Text>
-                        ) : (
-                            <Text style={styles.innertext}>Select</Text>
-                        )}
-                        <Image
-                            source={require("../../assets/drop-down.png")}
-                            style={styles.dropImage}
-                        />
-                    </TouchableOpacity>
-                </View>
-                {submit == true && country == '' && (
-                    <Text style={styles.errorStyle}>Please select a Country</Text>
-                )}
-                <Input
-                    full={true}
-                    text={"Address"}
-                    value={address}
-                    onChangeText={(value) => {
-                        setAddress(value);
-                    }}
-                />
-                {submit == true && address == "" && (
-                    <Text style={styles.errorStyle}>
-                        Address cannot be empty
-                    </Text>
-                )}
-
-                <Input
-                    full={true}
-                    text={"Phone"}
-                    value={phoneNumber}
-                    onChangeText={(value) => {
-                        setPhoneNumber(value);
-                    }}
-                />
-                {
-                    submit && phoneNumber == "" ? <Text style={styles.errorStyle}> Phonenumber cannot be empty </Text> : null
-                }
-                {
-                    submit && phoneNumber.length && !isPhoneValid(phoneNumber) ? <Text style={[styles.errorStyle]}>Phone number is incomplete </Text> : null
-                }
+                    />
+                    {
+                        submit && phoneNumber == "" ? <Text style={styles.errorStyle}> Phonenumber cannot be empty </Text> : null
+                    }
+                    {
+                        submit && phoneNumber.length && !isPhoneValid(phoneNumber) ? <Text style={[styles.errorStyle]}>Phone number is incomplete </Text> : null
+                    }
 
 
 
-                <Text style={[styles.text, { marginTop: 15 }]}> Age Group</Text>
-                <FlatList
-                    data={arr}
-                    // showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.contentContainerStyle}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item, index }) => {
-                        return (
-                            <View style={styles.outerView}>
-                                <View style={[styles.innerView1]}>
-                                    <MaterialIcons onPress={() => {
-                                        // let ageArr = [...ageGroup];
-                                        let array = arr;
-                                        array[prev].flag = false;
-                                        array[index].flag = true;
-                                        setArr(arr);
-                                        // ageArr.push({ ageGroup: item.age })
-                                        // setAge(ageArr)
-                                        setAgeGroup(item.age);
-                                        setPrev(index);
-                                    }}
-                                        size={20}
-                                        name={item.flag && ageGroup == item.age ? "check-box" : "check-box-outline-blank"} />
-                                    <Text style={styles.innertext}>{item.age}</Text>
+                    <Text style={[styles.text, { marginTop: 15 }]}> Age Group</Text>
+                    <FlatList
+                        data={arr}
+                        // showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.contentContainerStyle}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item, index }) => {
+                            return (
+                                <View style={styles.outerView}>
+                                    <View style={[styles.innerView1]}>
+                                        <MaterialIcons onPress={() => {
+                                            // let ageArr = [...ageGroup];
+                                            let array = arr;
+                                            array[prev].flag = false;
+                                            array[index].flag = true;
+                                            setArr(arr);
+                                            // ageArr.push({ ageGroup: item.age })
+                                            // setAge(ageArr)
+                                            setAgeGroup(item.age);
+                                            setPrev(index);
+                                        }}
+                                            size={20}
+                                            name={item.flag && ageGroup == item.age ? "check-box" : "check-box-outline-blank"} />
+                                        <Text style={styles.innertext}>{item.age}</Text>
+                                    </View>
                                 </View>
-                            </View>
-                        );
-                    }}
-                />
-                {submit == true && ageGroup == "" && (
-                    <Text style={styles.errorStyle}>  Please select age group</Text>
-                )}
-                <Button text={'Register'} onPress={() => { checkNetwork() }} />
-                <View style={{ marhinBottom: 20 }}></View>
-            </ScrollView>
-            <RegisterationModal
-             modalVisible={modalVisible}
-              setModalVisible={setModalVisible} 
-              navigation={navigation} />
-            <CountryPicker
-                theme={styles.themeText}
-                withFilter={true}
-                visible={countryModal}
-                onSelect={(country) => onSelect(country)}
-                withAlphaFilter={true}
-                withCountryNameButton={true}
-                renderFlagButton={_flagButton}
-            >
-                <View />
-            </CountryPicker>
-            <View style={styles.snackbarContainerStyle}>
-                <Snackbar
-                    visible={visible}
-                    onDismiss={() => setVisible(!visible)}
-                    action={{
-                        label: 'OK',
-                        onPress: () => {
-                            console.log("hello")
-                        },
-                    }}>
-                    {message}
-                </Snackbar>
+                            );
+                        }}
+                    />
+                    {submit == true && ageGroup == "" && (
+                        <Text style={styles.errorStyle}>  Please select age group</Text>
+                    )}
+                    <Button text={'Register'} onPress={() => { checkNetwork() }} />
+                    <View style={{ marhinBottom: 20 }}></View>
+                </ScrollView>
+                <RegisterationModal
+                    modalVisible={modalVisible}
+                    setModalVisible={setModalVisible}
+                    navigation={navigation} />
+                <CountryPicker
+                    theme={styles.themeText}
+                    withFilter={true}
+                    visible={countryModal}
+                    onSelect={(country) => onSelect(country)}
+                    withAlphaFilter={true}
+                    withCountryNameButton={true}
+                    renderFlagButton={_flagButton}
+                >
+                    <View />
+                </CountryPicker>
             </View>
-        </View>
+        </Container>
     );
 };
 

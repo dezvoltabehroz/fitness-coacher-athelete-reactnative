@@ -21,6 +21,8 @@ import { FontFamily } from '../../style/typograpy'
 import BookingCard from './BookingCard';
 import { connect } from 'react-redux';
 import { Snackbar } from 'react-native-paper';
+import { errorUtils } from '../../common/Utilities';
+import Container from '../../common/Container';
 const height = Dimensions.get('window').height;
 
 const BookingScreen = (props) => {
@@ -53,7 +55,7 @@ const BookingScreen = (props) => {
         }
       })
       .catch((error) => {
-        setMessage(`${error}`)
+        setMessage(`${errorUtils.getError(error)}`)
         setVisible(true);
         setLoading(false)
       });
@@ -74,7 +76,7 @@ const BookingScreen = (props) => {
         }
       })
       .catch((error) => {
-        setMessage(`${error}`)
+        setMessage(`${errorUtils.getError(error)}`)
         setVisible(true);
         setLoading(false)
       });
@@ -83,90 +85,79 @@ const BookingScreen = (props) => {
 
 
   return (
-    <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        translucent
-        backgroundColor={'transparent'}
-      />
-      <View style={styles.header}>
-        <Text style={styles.text}>COACHER</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity onPress={() => { props.navigation.navigate("Create") }}>
-            <Image source={require('../../assets/add.png')} style={styles.image1} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => { props.navigation.navigate("AccountSettings") }}>
-            <Image source={props?.user?.imageUrl != null ? { uri: props?.user?.imageUrl } : require('../../assets/splash.jpg')}
-              resizeMode="contain" style={styles.image} />
-          </TouchableOpacity>
+    <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
+      <View style={styles.container}>
+        <StatusBar
+          barStyle="dark-content"
+          translucent
+          backgroundColor={'transparent'}
+        />
+        <View style={styles.header}>
+          <Text style={styles.text}>COACHER</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => { props.navigation.navigate("Create") }}>
+              <Image source={require('../../assets/add.png')} style={styles.image1} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => { props.navigation.navigate("AccountSettings") }}>
+              <Image source={props?.user?.imageUrl != null ? { uri: props?.user?.imageUrl } : require('../../assets/splash.jpg')}
+                resizeMode="contain" style={styles.image} />
+            </TouchableOpacity>
 
+          </View>
         </View>
-      </View>
-      <View style={styles.bottom}>
-        <View style={{ flexDirection: 'row', marginTop: 20, alignItems: 'center' }}>
-          <TouchableOpacity onPress={() => { setActive(true) }}>
-            <Text style={[styles.text1, { color: !active ? Colors.textColor : Colors.blackColor }]}>My Active Bookings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => { setActive(false) }}>
-            <Text style={[styles.text1, { color: active ? Colors.textColor : Colors.blackColor, marginLeft: 20 }]}>Completed Bookings</Text>
-          </TouchableOpacity>
-        </View>
-        {
-          loading ?
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <ActivityIndicator size={20} color={'#030E2D'} />
-            </View>
-            :
-            active ?
-              bookings.length == 0 ?
-                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                  <Text>No Bookings Found</Text>
-                </View>
-                :
-                <FlatList
-                  data={bookings}
-                  contentContainerStyle={{ paddingBottom: "30%" }}
-                  showsVerticalScrollIndicator={false}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item, index }) => {
-                    return (
-                      <BookingCard item={item} navigation={props.navigation} active={active} />
-                    )
-                  }}
-                />
+        <View style={styles.bottom}>
+          <View style={{ flexDirection: 'row', marginTop: 20, alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => { setActive(true) }}>
+              <Text style={[styles.text1, { color: !active ? Colors.textColor : Colors.blackColor }]}>My Active Bookings</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => { setActive(false) }}>
+              <Text style={[styles.text1, { color: active ? Colors.textColor : Colors.blackColor, marginLeft: 20 }]}>Completed Bookings</Text>
+            </TouchableOpacity>
+          </View>
+          {
+            loading ?
+              <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size={20} color={'#030E2D'} />
+              </View>
               :
-              completedBookings.length == 0 ?
-                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                  <Text>No Bookings Found</Text>
-                </View>
+              active ?
+                bookings.length == 0 ?
+                  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                    <Text>No Bookings Found</Text>
+                  </View>
+                  :
+                  <FlatList
+                    data={bookings}
+                    contentContainerStyle={{ paddingBottom: "30%" }}
+                    showsVerticalScrollIndicator={false}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item, index }) => {
+                      return (
+                        <BookingCard item={item} navigation={props.navigation} active={active} />
+                      )
+                    }}
+                  />
                 :
-                <FlatList
-                  data={completedBookings}
-                  contentContainerStyle={{ paddingBottom: "30%" }}
-                  showsVerticalScrollIndicator={false}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item, index }) => {
-                    return (
-                      <BookingCard item={item} navigation={props.navigation} active={false} />
-                    )
-                  }}
-                />
-        }
+                completedBookings.length == 0 ?
+                  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                    <Text>No Bookings Found</Text>
+                  </View>
+                  :
+                  <FlatList
+                    data={completedBookings}
+                    contentContainerStyle={{ paddingBottom: "30%" }}
+                    showsVerticalScrollIndicator={false}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item, index }) => {
+                      return (
+                        <BookingCard item={item} navigation={props.navigation} active={false} />
+                      )
+                    }}
+                  />
+          }
+        </View>
       </View>
-      <View style={styles.snackbarContainerStyle}>
-        <Snackbar
-          visible={visible}
-          onDismiss={() => setVisible(!visible)}
-          action={{
-            label: 'OK',
-            onPress: () => {
-              console.log("hello")
-            },
-          }}>
-          {message}
-        </Snackbar>
-      </View>
-    </View>
+    </Container>
   );
 };
 

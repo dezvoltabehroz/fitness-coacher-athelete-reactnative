@@ -16,6 +16,8 @@ import NetInfo from "@react-native-community/netinfo";
 import { ActivityIndicator } from "react-native";
 import { AuthServices } from "../../services";
 import { Snackbar } from 'react-native-paper';
+import { errorUtils } from "../../common/Utilities";
+import Container from "../../common/Container";
 const ResetPassword = ({ navigation, route }) => {
   console.log(navigation)
   console.log(route)
@@ -106,7 +108,7 @@ const ResetPassword = ({ navigation, route }) => {
         }
       })
       .catch((error) => {
-        setMessage(`${error}`)
+        setMessage(`${errorUtils.getError(error)}`)
         setVisible(true);
         setLoading(false)
         console.log(error);
@@ -115,6 +117,7 @@ const ResetPassword = ({ navigation, route }) => {
   };
 
   return (
+    <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={{ paddingBottom: "100%" }}>
         <View style={styles.logoContainer}>
@@ -173,21 +176,10 @@ const ResetPassword = ({ navigation, route }) => {
                 <Text style={styles.btnText}>Update</Text>}
           </TouchableOpacity>
         </View>
-        <View style={styles.snackbarContainerStyle}>
-          <Snackbar
-            visible={visible}
-            onDismiss={() => setVisible(!visible)}
-            action={{
-              label: 'OK',
-              onPress: () => {
-                console.log("hello")
-              },
-            }}>
-            {message}
-          </Snackbar>
-        </View>
+       
       </ScrollView>
     </SafeAreaView>
+    </Container>
   );
 };
 

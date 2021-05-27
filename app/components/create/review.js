@@ -25,6 +25,7 @@ import StarRating from 'react-native-star-rating';
 import { BookingServices } from '../../services';
 import { connect } from 'react-redux';
 import NetInfo from "@react-native-community/netinfo";
+import { errorUtils } from '../../common/Utilities';
 const height = Dimensions.get('window').height
 const BookingDetails = (props) => {
     const [modalVisible, setModalVisible] = useState(false)
@@ -75,7 +76,7 @@ const BookingDetails = (props) => {
                 }
             })
             .catch((err) => {
-                setMessage(`${err}`)
+                setMessage(`${errorUtils.getError(err)}`)
                 setVisible(true);
             })
     }
@@ -132,19 +133,7 @@ const BookingDetails = (props) => {
                 <View style={{ marginHorizontal: 20 }}>
                     <Button text={'Submit'} onPress={() => checkNetwork()} />
                 </View>
-                <View style={styles.snackbarContainerStyle}>
-                    <Snackbar
-                        visible={visible}
-                        onDismiss={() => setVisible(!visible)}
-                        action={{
-                            label: 'OK',
-                            onPress: () => {
-                                console.log("hello")
-                            },
-                        }}>
-                        {message}
-                    </Snackbar>
-                </View>
+               
             </View>
         </View>
     );

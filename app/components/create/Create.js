@@ -169,7 +169,6 @@ const SettingScreen = (props) => {
   };
 
   useEffect(() => {
-    // setSubmit()
   }, [submit])
 
   const checkBoxFunc = (iteration) => {
@@ -179,12 +178,10 @@ const SettingScreen = (props) => {
     }
     subCategory[iteration].selected = true;
     setInstruction(subCategory[iteration])
+    setSubCat(true);
     setSubCategories(subCategory);
-    for (let index = 0; index < instruction.length; index++) {
-      if (instruction[index].selected) {
-        setSubCat(true);
-      }
-    }
+    
+
   };
 
   return (
@@ -246,7 +243,7 @@ const SettingScreen = (props) => {
                   }}
                 />
               </View>
-              {submit && subCatVal != true && (
+              {submit && !subCatVal && (
                 <Text style={styles.errorStyle}>
                   Please select aleast one instruction type
                 </Text>

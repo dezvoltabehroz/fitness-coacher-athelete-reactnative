@@ -21,12 +21,15 @@ import { NotificationServices } from '../../services';
 import { connect } from 'react-redux';
 import { authActions } from '../../redux/actions/auth';
 import { bindActionCreators } from "redux";
+import Container from '../../common/Container';
+import { errorUtils } from '../../common/Utilities';
 const height = Dimensions.get('window').height
 const NotificatinsSettings = (props) => {
   const [isSwitchOn, setIsSwitchOn] = React.useState(false);
   const [isSwitchOn1, setIsSwitchOn1] = React.useState(props?.user?.notification);
   const [isSwitchOn2, setIsSwitchOn2] = React.useState(false);
-
+  const [message, setMessage] = useState("")
+  const [visible, setVisible] = useState(false)
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
   const onToggleSwitch1 = () => setIsSwitchOn1(!isSwitchOn1);
   const onToggleSwitch2 = () => setIsSwitchOn2(!isSwitchOn2);
@@ -37,7 +40,7 @@ const NotificatinsSettings = (props) => {
       "notification": !isSwitchOn1
     }
     NotificationServices.notificationSetting(userData, props.token)
-      .then(async(res) => {
+      .then(async (res) => {
         if (res.data.success) {
           onToggleSwitch1()
           let data = {
@@ -47,51 +50,57 @@ const NotificatinsSettings = (props) => {
           await props.authActions.getUserProfile(data, props.navigation.replace)
         }
         else {
-          console.log(res.data)
+          setMessage(`${res.data.msg}`)
+          setVisible(true);
         }
       })
-      .catch((err) => console.log(err))
+      .catch((err) => {
+        console.log(err.response)
+        setMessage(`${errorUtils.getError(err)}`)
+        setVisible(true);
+      })
   }
   return (
-    <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        translucent
-        backgroundColor={'transparent'}
-      />
-      <View style={styles.bottom}>
-        <View style={styles.inner}>
-          <View>
-            <Text style={styles.text}>App Notifications</Text>
-            <Text style={styles.text1}>Play sound for in-app update</Text>
+    <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
+      <View style={styles.container}>
+        <StatusBar
+          barStyle="dark-content"
+          translucent
+          backgroundColor={'transparent'}
+        />
+        <View style={styles.bottom}>
+          <View style={styles.inner}>
+            <View>
+              <Text style={styles.text}>App Notifications</Text>
+              <Text style={styles.text1}>Play sound for in-app update</Text>
+            </View>
+            <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
+              value={isSwitchOn} onValueChange={onToggleSwitch} color={Colors.buttonColor} />
           </View>
-          <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
-            value={isSwitchOn} onValueChange={onToggleSwitch} color={Colors.buttonColor} />
-        </View>
-        <View style={styles.inner}>
-          <View>
-            <Text style={styles.text}>Push Notifications</Text>
+          <View style={styles.inner}>
+            <View>
+              <Text style={styles.text}>Push Notifications</Text>
+            </View>
+            <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
+              value={isSwitchOn1} onValueChange={() => handleNotificationSetting()} color={Colors.buttonColor} />
           </View>
-          <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
-            value={isSwitchOn1} onValueChange={() => handleNotificationSetting()} color={Colors.buttonColor} />
-        </View>
-        <View style={styles.inner}>
-          <View>
-            <Text style={styles.text}>Vibration</Text>
-            <Text style={styles.text1}>On</Text>
+          <View style={styles.inner}>
+            <View>
+              <Text style={styles.text}>Vibration</Text>
+              <Text style={styles.text1}>On</Text>
+            </View>
+            <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
+              value={isSwitchOn2} onValueChange={onToggleSwitch2} color={Colors.buttonColor} />
           </View>
-          <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
-            value={isSwitchOn2} onValueChange={onToggleSwitch2} color={Colors.buttonColor} />
-        </View>
-        <View style={styles.inner}>
-          <View>
-            <Text style={styles.text}>Notifications sound</Text>
-            <Text style={styles.text1}>Default [IOS]</Text>
+          <View style={styles.inner}>
+            <View>
+              <Text style={styles.text}>Notifications sound</Text>
+              <Text style={styles.text1}>Default [IOS]</Text>
+            </View>
           </View>
         </View>
       </View>
-
-    </View>
+    </Container>
   );
 };
 
