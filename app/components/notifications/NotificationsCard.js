@@ -8,7 +8,6 @@ import {
     StatusBar,
     ImageBackground,
     Image,
-    AsyncStorage,
     NativeModules,
     Platform,
     Dimensions,
@@ -17,8 +16,16 @@ import {
 import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy'
 import moment from "moment";
+import { BookingServices, TrainingCategoryServices } from '../../services';
+import DetailsModal from '../../common/DetailsModal';
+import { errorUtils } from '../../common/Utilities';
+import Container from '../../common/Container';
 const height = Dimensions.get('window').height
-const NotificationsCard = ({ item, navigation }) => {
+const NotificationsCard = ({ item, props, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+    const [parsedObj, setParsedObj] = useState({});
+    const [visible, setVisible] = useState(false)
+    const [message, setMessage] = useState("")
     // return (
     //     <View style={styles.container}>
     //         <View style={styles.outer}>
@@ -59,6 +66,40 @@ const NotificationsCard = ({ item, navigation }) => {
     //                 </TouchableOpacity> : null}
     //     </View >
     // );
+    useEffect(() => {
+        let data = item;
+        let parsedData = JSON.parse(data.obj);
+        setParsedObj(parsedData);
+        if (parsedData != null) {
+            console.log(parsedData)
+        }
+
+    }, [2])
+
+    const handleCompeletion = () => {
+        let data = {
+            "status": "completionAccepted",
+            "BookingId": parsedObj.id
+        }
+        BookingServices.completionRequest(data, props?.token)
+            .then((res) => {
+                if (res.data.success) {
+                    setModalVisible(!modalVisible)
+                    navigation.replace('TabContainer')
+                }
+                else {
+                    setModalVisible(!modalVisible)
+                    setMessage(`${res.data.msg}`)
+                    setVisible(!visible)
+                }
+            })
+            .catch((err) => {
+                setModalVisible(!modalVisible)
+                setMessage(`${errorUtils.getError(err)}`)
+                setVisible(!visible)
+            })
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.outer}>
@@ -69,7 +110,7 @@ const NotificationsCard = ({ item, navigation }) => {
                     />
                     <View>
                         <Text style={styles.text}>{item.title}</Text>
-                        {item.type == 'completed_booking' || item.type == 'requestAcceptance' ? (
+                        {item.type == 'completed_booking' || 'requestCompletion' ? (
                             <View
                                 style={{
                                     // justifyContent:'',
@@ -107,19 +148,21 @@ const NotificationsCard = ({ item, navigation }) => {
                                             color: Colors.textColor,
                                         },
                                     ]}>
-                                    17 hours ago
-                    </Text>
+                                    {moment(item.createdAt).fromNow()}
+                                </Text>
                             </>
                         )}
                     </View>
                 </View>
             </View>
-            {item.type == 'completed_booking' || item.type == 'requestAcceptance' ? (
+            {item.type == 'completed_booking' || item.type == 'requestCompletion' ? (
                 <View style={styles.buttonView}>
                     <TouchableOpacity
                         style={[styles.button, { borderBottomLeftRadius: 10 }]}
                         onPress={() => {
-                            navigation.navigate('AcceptBooking', { flag: true });
+                            console.log(parsedObj.id)
+                            setModalVisible(!modalVisible)
+                            // navigation.navigate('Bookingdetails', { data: parsedObj, flag: true });
                         }}>
                         <Text style={styles.text3}>Accept</Text>
                     </TouchableOpacity>
@@ -128,11 +171,12 @@ const NotificationsCard = ({ item, navigation }) => {
                         <Text style={styles.text3}>Reject</Text>
                     </TouchableOpacity>
                 </View>
-            ) : item.type == 'booking_request' ? (
+            ) : item.type == 'requestAcceptance' ? (
                 <TouchableOpacity style={styles.booking}>
                     <Text style={styles.text3}>View Profile</Text>
                 </TouchableOpacity>
             ) : null}
+            <DetailsModal setVisible={setVisible} message={message} visible={visible} onPress={() => { handleCompeletion() }} setModalVisible={setModalVisible} modalVisible={modalVisible} navigation={navigation} />
         </View>
     );
 };

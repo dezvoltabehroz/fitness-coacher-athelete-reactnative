@@ -46,6 +46,7 @@ const BookingDetails = (props) => {
     }, [loading])
     useEffect(() => {
         setLoading(true)
+        // getBookingDetail()
         if (props.route.params != undefined) {
             const { data } = props?.route?.params;
             console.log(data)
@@ -56,7 +57,7 @@ const BookingDetails = (props) => {
 
     const getBookingDetail = () => {
         setLoading(true)
-        BookingServices.getBookingDetails(props?.route?.params?.bookingId, props?.token)
+        BookingServices.getBookingDetails(props?.route?.params?.requestId, props?.token)
             .then((response) => {
                 if (response.data.success) {
                     console.log(response.data)

@@ -8,7 +8,7 @@ import {
   StatusBar,
   ImageBackground,
   Image,
-  AsyncStorage,
+  ActivityIndicator,
   NativeModules,
   Platform,
   Dimensions,
@@ -21,6 +21,7 @@ import NotificationCard from './NotificationsCard';
 import { connect } from 'react-redux';
 const height = Dimensions.get('window').height
 const NotificationsScreen = (props) => {
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     getNotifications();
   }, [])
@@ -56,39 +57,52 @@ const NotificationsScreen = (props) => {
       .then((res) => {
         console.log(res.data)
         setdata(res.data.notifications)
+        setLoading(false)
       })
       .catch((err) => console.log(err))
   }
 
-console.log("props?.user : ",props?.token)
+
+  console.log("props?.user : ", props?.token)
 
   return (
     <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        translucent
-        backgroundColor={'transparent'}
-      />
-      <ScrollView style={styles.bottom}>
-        {data.length == 0 ?
-          <View style={{ marginTop: 200, justifyContent: "center", alignItems: "center" }}>
-            <Text>No notification found!</Text>
+      {
+        loading ?
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size={20} color={'#030E2D'} />
           </View>
           :
-          <FlatList
-            data={data}
-            showsVerticalScrollIndicator={false}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item, index }) => {
-              return (
-                <NotificationCard item={item} navigation={props.navigation} />
+          <>
+            <StatusBar
+              barStyle="dark-content"
+              translucent
+              backgroundColor={'transparent'}
+            />
+            <ScrollView style={styles.bottom}>
+              {data.length == 0 ?
+                <View style={{ marginTop: 200, justifyContent: "center", alignItems: "center" }}>
+                  <Text>No notification found!</Text>
+                </View>
+                :
+                <FlatList
+                  data={data}
+                  showsVerticalScrollIndicator={false}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <NotificationCard trainingTypes={props?.trainingTypes}
+                        subCategories={props?.subCategories}
+                        skills={props?.skills}
+                        item={item}
+                        navigation={props.navigation} />
 
-              )
-            }}
-          />}
-        <View style={{ height: 20 }}></View>
-      </ScrollView>
-
+                    )
+                  }}
+                />}
+              <View style={{ height: 20 }}></View>
+            </ScrollView>
+          </>}
     </View>
   );
 };
@@ -112,6 +126,9 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => ({
   user: state.authReducer.userData || {},
-  token: state.authReducer.userToken || {}
+  token: state.authReducer.userToken || {},
+  trainingTypes: state.trainingReducer.trainingTypes || {},
+  skills: state.trainingReducer.skills || {},
+  subCategories: state.trainingReducer.subCategories || {}
 });
 export default connect(mapStateToProps)(NotificationsScreen);

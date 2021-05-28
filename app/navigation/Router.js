@@ -113,6 +113,17 @@ function NotificationsStack() {
           fontSize: 16,
         }
       }} />
+      <Stack.Screen name="Bookingdetails" component={BookingDetails} options={{
+        headerTitle: 'NOTIFICATIONS',
+        headerShown: false,
+        headerTitleAllowFontScaling: true,
+        headerTransparent: true,
+        headerLeft: null,
+        headerTitleStyle: {
+          fontFamily: FontFamily.helveticaBold,
+          fontSize: 16,
+        }
+      }} />
 
     </Stack.Navigator>
   )
@@ -239,6 +250,7 @@ function TabContainer() {
       }}>
       <Tab.Screen name="Booking" component={BookingStack} options={{
         tabBarLabel: "Bookings",
+        unmountOnBlur: true,
         tabBarIcon: ({ inactiveTintColor, activeTintColor, focused }) => (
 
           <Image tintColor={focused ? Colors.buttonColor : 'gray'} source={require('../assets/booking.png')} style={{ height: 20, width: 20 }} />
@@ -246,6 +258,7 @@ function TabContainer() {
         ),
       }} />
       <Tab.Screen name="NotificationsStack" component={NotificationsStack} options={{
+        unmountOnBlur: true,
         tabBarLabel: "Notifications",
         tabBarIcon: ({ focused }) => (
 
@@ -280,6 +293,7 @@ function TabContainer() {
             if (exploreActiveRoute.name === "ChangePassword") { tabBarVisible = false };
           }
           return {
+            unmountOnBlur: true,
             headerShown: false,
             tabBarVisible,
             tabBarLabel: "Settings",
