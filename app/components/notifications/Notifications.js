@@ -91,7 +91,9 @@ const NotificationsScreen = (props) => {
                   keyExtractor={(item, index) => index.toString()}
                   renderItem={({ item, index }) => {
                     return (
-                      <NotificationCard trainingTypes={props?.trainingTypes}
+                      <NotificationCard
+                        token={props?.token}
+                        trainingTypes={props?.trainingTypes}
                         subCategories={props?.subCategories}
                         skills={props?.skills}
                         item={item}

@@ -8,7 +8,7 @@ import {
   StatusBar,
   ImageBackground,
   Image,
-  TextInput,
+  ActivityIndicator,
   Dimensions,
   TouchableOpacity
 } from 'react-native';
@@ -17,9 +17,9 @@ import { Colors } from '../style/colors';
 import Modal from 'react-native-modal';
 import { Col } from 'native-base';
 import Button from './Button';
-import Container from './Container';
+import { Snackbar } from 'react-native-paper';
 const height = Dimensions.get('window').height;
-const DetailsModal = ({ modalVisible, onPress, setVisible, message, visible }) => {
+const DetailsModal = ({ modalVisible, onPress, onRequest, loading,firstName,lastName }) => {
   return (
     <Modal
       style={styles.modal}
@@ -32,17 +32,24 @@ const DetailsModal = ({ modalVisible, onPress, setVisible, message, visible }) =
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
     >
-      <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
-        <View style={styles.container}>
-          <Image source={require('../assets/triangle.png')} style={styles.image} />
-          <Text style={styles.text}>Zimry Mayfield has Marked the booking as completed</Text>
-          <Text style={styles.text1}>If everthing requested in the booking has been completed bt Zimry, you can confirm the booking as complete, otherwise you can request for a revision.</Text>
-          <Button onPress={() => { onPress(); }} text={'Confirm as Complete'} />
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.text2}>Request a Revision</Text>
-          </TouchableOpacity>
-        </View>
-      </Container>
+      <View style={styles.container}>
+        {
+          loading ?
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <ActivityIndicator size={20} color={'#030E2D'} />
+            </View>
+            :
+            <>
+              <Image source={require('../assets/triangle.png')} style={styles.image} />
+              <Text style={styles.text}>{firstName} {lastName} has Marked the booking as completed</Text>
+              <Text style={styles.text1}>If everthing requested in the booking has been completed bt {firstName}, you can confirm the booking as complete, otherwise you can request for a revision.</Text>
+              <Button onPress={() => { onPress(); }} text={'Confirm as Complete'} />
+              <TouchableOpacity onPress={() => onRequest()} style={styles.button}>
+                <Text style={styles.text2}>Request a Revision</Text>
+              </TouchableOpacity>
+            </>
+        }
+      </View>
     </Modal >
   );
 };

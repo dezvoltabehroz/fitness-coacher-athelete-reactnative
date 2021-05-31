@@ -21,7 +21,7 @@ import DetailsModal from '../../common/DetailsModal';
 import { errorUtils } from '../../common/Utilities';
 import Container from '../../common/Container';
 const height = Dimensions.get('window').height
-const NotificationsCard = ({ item, props, navigation }) => {
+const NotificationsCard = ({ item, token, navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [parsedObj, setParsedObj] = useState({});
     const [visible, setVisible] = useState(false)
@@ -81,103 +81,127 @@ const NotificationsCard = ({ item, props, navigation }) => {
             "status": "completionAccepted",
             "BookingId": parsedObj.id
         }
-        BookingServices.completionRequest(data, props?.token)
+        BookingServices.completionRequest(data, token)
             .then((res) => {
                 if (res.data.success) {
-                    setModalVisible(!modalVisible)
                     navigation.replace('TabContainer')
                 }
                 else {
+                    setMessage(`${res.data.msg}`)
+                    setVisible(!visible)
                     setModalVisible(!modalVisible)
+                }
+            })
+            .catch((err) => {
+                console.log(err.response.data)
+                setMessage(`${errorUtils.getError(err)}`)
+                setVisible(!visible)
+                setModalVisible(!modalVisible)
+            })
+    }
+
+    const handleRequestRevision = () => {
+        let data = {
+            "status": "completionRejected",
+            "BookingId": parsedObj?.id
+        }
+        BookingServices.completionRequest(data, token)
+            .then((res) => {
+                if (res.data.success) {
+                    navigation.replace('TabContainer')
+                }
+                else {
                     setMessage(`${res.data.msg}`)
                     setVisible(!visible)
                 }
             })
             .catch((err) => {
-                setModalVisible(!modalVisible)
+                console.log(err.response.data)
                 setMessage(`${errorUtils.getError(err)}`)
                 setVisible(!visible)
             })
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.outer}>
-                <View style={styles.inner}>
-                    <Image
-                        source={require('../../assets/splash.jpg')}
-                        style={styles.image}
-                    />
-                    <View>
-                        <Text style={styles.text}>{item.title}</Text>
-                        {item.type == 'completed_booking' || 'requestCompletion' ? (
-                            <View
-                                style={{
-                                    // justifyContent:'',
-                                    // backgroundColor: 'pink',
-                                    alignSelf: 'center',
-                                    // marginTop: 2,
-                                }}>
+        <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
+            <View style={styles.container}>
+                <View style={styles.outer}>
+                    <View style={styles.inner}>
+                        <Image
+                            source={require('../../assets/splash.jpg')}
+                            style={styles.image}
+                        />
+                        <View>
+                            <Text style={styles.text}>{item.title}</Text>
+                            {item.type == 'completed_booking' || 'requestCompletion' ? (
+                                <View
+                                    style={{
+                                        // justifyContent:'',
+                                        // backgroundColor: 'pink',
+                                        alignSelf: 'center',
+                                        // marginTop: 2,
+                                    }}>
 
-                                <Text style={styles.text}>{item.body}</Text>
-                                <Text
-                                    style={[
-                                        styles.text,
-                                        {
-                                            fontSize: 11,
-                                            lineHeight: height > 667 ? 10 : 12,
-                                            color: Colors.textColor,
-                                        },
-                                    ]}>
-                                    {moment(item.createdAt).fromNow()}
-                                </Text>
-                            </View>
-                        ) : (
-                            <>
-                                <TouchableOpacity
-                                    onPress={() => navigation.navigate('Bookingdetails')}>
                                     <Text style={styles.text}>{item.body}</Text>
-                                </TouchableOpacity>
+                                    <Text
+                                        style={[
+                                            styles.text,
+                                            {
+                                                fontSize: 11,
+                                                lineHeight: height > 667 ? 10 : 12,
+                                                color: Colors.textColor,
+                                            },
+                                        ]}>
+                                        {moment(item.createdAt).fromNow()}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <>
+                                    <TouchableOpacity
+                                        onPress={() => navigation.navigate('Bookingdetails')}>
+                                        <Text style={styles.text}>{item.body}</Text>
+                                    </TouchableOpacity>
 
-                                <Text
-                                    style={[
-                                        styles.text,
-                                        {
-                                            fontSize: 11,
-                                            lineHeight: height > 667 ? 10 : 12,
-                                            color: Colors.textColor,
-                                        },
-                                    ]}>
-                                    {moment(item.createdAt).fromNow()}
-                                </Text>
-                            </>
-                        )}
+                                    <Text
+                                        style={[
+                                            styles.text,
+                                            {
+                                                fontSize: 11,
+                                                lineHeight: height > 667 ? 10 : 12,
+                                                color: Colors.textColor,
+                                            },
+                                        ]}>
+                                        {moment(item.createdAt).fromNow()}
+                                    </Text>
+                                </>
+                            )}
+                        </View>
                     </View>
                 </View>
+                {item.type == 'completed_booking' || item.type == 'requestCompletion' ? (
+                    <View style={styles.buttonView}>
+                        <TouchableOpacity
+                            style={[styles.button, { borderBottomLeftRadius: 10 }]}
+                            onPress={() => {
+                                console.log(parsedObj.id)
+                                // setModalVisible(!modalVisible)
+                                navigation.navigate('Bookingdetails', { data: parsedObj, flag: true });
+                            }}>
+                            <Text style={styles.text3}>Accept</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleRequestRevision()}
+                            style={[styles.button, { borderBottomRightRadius: 10 }]}>
+                            <Text style={styles.text3}>Reject</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : item.type == 'requestAcceptance' ? (
+                    <TouchableOpacity style={styles.booking}>
+                        <Text style={styles.text3}>View Profile</Text>
+                    </TouchableOpacity>
+                ) : null}
+                <DetailsModal setVisible={setVisible} message={message} visible={visible} onPress={() => { handleCompeletion() }} setModalVisible={setModalVisible} modalVisible={modalVisible} navigation={navigation} />
             </View>
-            {item.type == 'completed_booking' || item.type == 'requestCompletion' ? (
-                <View style={styles.buttonView}>
-                    <TouchableOpacity
-                        style={[styles.button, { borderBottomLeftRadius: 10 }]}
-                        onPress={() => {
-                            console.log(parsedObj.id)
-                            setModalVisible(!modalVisible)
-                            // navigation.navigate('Bookingdetails', { data: parsedObj, flag: true });
-                        }}>
-                        <Text style={styles.text3}>Accept</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.button, { borderBottomRightRadius: 10 }]}>
-                        <Text style={styles.text3}>Reject</Text>
-                    </TouchableOpacity>
-                </View>
-            ) : item.type == 'requestAcceptance' ? (
-                <TouchableOpacity style={styles.booking}>
-                    <Text style={styles.text3}>View Profile</Text>
-                </TouchableOpacity>
-            ) : null}
-            <DetailsModal setVisible={setVisible} message={message} visible={visible} onPress={() => { handleCompeletion() }} setModalVisible={setModalVisible} modalVisible={modalVisible} navigation={navigation} />
-        </View>
+        </Container>
     );
 };
 
@@ -284,4 +308,5 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 10,
     },
 });
-export default NotificationsCard;
+
+export default NotificationsCard

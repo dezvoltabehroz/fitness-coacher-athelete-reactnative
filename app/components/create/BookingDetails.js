@@ -12,7 +12,8 @@ import {
     NativeModules,
     Platform,
     Dimensions,
-    TextInput
+    TextInput,
+    ActivityIndicator
 } from 'react-native';
 import { Colors } from '../../style/colors'
 import { RadioButton, Checkbox, Snackbar } from 'react-native-paper';
@@ -32,6 +33,7 @@ const BookingDetails = (props) => {
     const [message, setMessage] = useState("");
     const [bookingDetails, setBookingDetails] = useState({})
     const [loading, setLoading] = useState(true)
+    const [modalLoading, setModalLoading] = useState(false)
     // useEffect(() => {
     //     if(props.route)
     //     getBookingDetail();
@@ -41,27 +43,30 @@ const BookingDetails = (props) => {
     //     setBookingDetails(data)
     // }, [bookingDetails])
 
+    // useEffect(() => {
+    //     setLoading(!loading)
+    // }, [loading])
     useEffect(() => {
         setLoading(true)
-    }, [loading])
-    useEffect(() => {
-        setLoading(true)
-        // getBookingDetail()
-        if (props.route.params != undefined) {
-            const { data } = props?.route?.params;
-            console.log(data)
-            setBookingDetails(data)
-            setLoading(false)
-        }
+        getBookingDetail()
+        // if (props.route.params != undefined) {
+        //     const { data } = props?.route?.params;
+        //     console.log(data)
+        //     setBookingDetails(data)
+        //     setLoading(false)
+        // }
     }, []);
 
     const getBookingDetail = () => {
         setLoading(true)
-        BookingServices.getBookingDetails(props?.route?.params?.requestId, props?.token)
+        BookingServices.getBookingDetails(props?.route?.params?.data.id, props?.token)
             .then((response) => {
                 if (response.data.success) {
                     console.log(response.data)
-                    setBookingDetails(response.data.bookingDetail.rows[0])
+                    if (props?.route?.params?.data.status != "requestCompletion") {
+                        setModalVisible(true);
+                    }
+                    setBookingDetails(response.data.bookingDetail)
                     setLoading(false)
                 } else {
                     setMessage(`${response.data.msg}`)
@@ -77,84 +82,171 @@ const BookingDetails = (props) => {
                 setVisible(true); setModalVisible(false); console.log(err)
             })
     }
-    return (
-        <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
-            <View style={styles.container}>
-                <StatusBar
-                    barStyle="dark-content"
-                    translucent
-                    backgroundColor={'transparent'}
-                />
-                <View style={styles.header}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <TouchableOpacity onPress={() => props.navigation.goBack()}>
-                            <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
-                        </TouchableOpacity>
-                        <Text style={styles.headertext}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName} - {bookingDetails?.coach?.uniqueId}</Text>
-                    </View>
-                    <TouchableOpacity onPress={() => setModalVisible(true)}>
-                        <Image style={styles.headerLeft} source={require('../../assets/menu.png')} />
-                    </TouchableOpacity>
-                </View>
 
-                <View style={styles.bottom}>
-                    <Tabs tabBarUnderlineStyle={[styles.tabUnderline]} tabContainerStyle={{ elevation: 0, borderTopLeftRadius: 30, borderTopRightRadius: 30, height: 70, borderWidth: 0 }}>
-                        <Tab heading="Details" tabStyle={[styles.tab, { borderTopLeftRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopLeftRadius: 30 }]}
-                            textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
-                            {/* <View style={{ height: 380, backgroundColor: 'red' }}> */}
-                            <View style={styles.border}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                                    <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails') }}>
-                                        <Image source={require('../../assets/splash.jpg')} style={styles.profile} />
-                                    </TouchableOpacity>
-                                    <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>
-                                </View>
-                                <View style={styles.mainView}>
-                                    <Text style={styles.text1}>Requirements</Text>
-                                    <Image style={styles.image} source={require('../../assets/down-arrow.png')} />
-                                    {/* <Text style={styles.text1}>Baseball</Text> */}
-                                </View>
-                                <View style={styles.mainView}>
-                                    <Text style={styles.text}>Sports</Text>
-                                    <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingType?.title}</Text>
-                                </View>
-                                <View style={styles.mainView}>
-                                    <Text style={styles.text}>Age Group</Text>
-                                    <Text style={styles.text1}>{bookingDetails?.athleteRequest?.coachAgeGroup}</Text>
-                                </View>
-                                <View style={styles.mainView}>
-                                    <Text style={styles.text}>Instruction type</Text>
-                                    <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingSubCategory?.title}</Text>
-                                </View>
-                                <View style={styles.mainView}>
-                                    <Text style={styles.text}>Skill type</Text>
-                                    <Text style={styles.text1}>{bookingDetails?.athleteRequest?.subCategorySkill?.skill}</Text>
-                                </View>
-                                <Text style={[styles.text, { marginLeft: 10 }]}>Video</Text>
-                                <Image style={styles.video} source={require('../../assets/splash.jpg')} />
-                                {/* </View> */}
+    const handleCompeletion = () => {
+        setModalLoading(true)
+        let data = {
+            "status": "completionAccepted",
+            "BookingId": bookingDetails?.id
+        }
+        BookingServices.completionRequest(data, props?.token)
+            .then((res) => {
+                console.log(res.data)
+                if (res.data.success) {
+                    setModalVisible(!modalVisible)
+                    navigation.replace('TabContainer')
+                }
+                else {
+                    setModalVisible(!modalVisible)
+                    setModalLoading(false)
+                    setMessage(`${res.data.msg}`)
+                    setVisible(!visible)
+                }
+            })
+            .catch((err) => {
+                setModalVisible(!modalVisible)
+                setModalLoading(false)
+                console.log(err.response.data)
+                setMessage(`${errorUtils.getError(err)}`)
+                setVisible(!visible)
+            })
+    }
+
+    const handleRequestRevision = () => {
+        setModalLoading(true)
+        let data = {
+            "status": "completionRejected",
+            "BookingId": bookingDetails?.id
+        }
+        BookingServices.completionRequest(data, props?.token)
+            .then((res) => {
+                if (res.data.success) {
+                    setModalVisible(!modalVisible)
+                    navigation.replace('TabContainer')
+                }
+                else {
+                    setModalVisible(!modalVisible)
+                    setModalLoading(false)
+                    setTimeout(() => {
+                        setMessage(`${res.data.msg}`)
+                        setVisible(!visible)
+                    }, 2000);
+
+
+                }
+            })
+            .catch((err) => {
+
+                setModalVisible(!modalVisible)
+                setModalLoading(false)
+                console.log(err.response.data)
+                setTimeout(() => {
+                    setMessage(`${errorUtils.getError(err)}`)
+                    setVisible(!visible)
+                }, 2000);
+            })
+    }
+
+    return (
+        <>
+            {/* <Container onPress={() => setVisible(!visible)} message={message} visible={visible}> */}
+            {
+                loading ?
+                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                        <ActivityIndicator size={20} color={'#030E2D'} />
+                    </View>
+                    :
+                    <View style={styles.container}>
+                        <StatusBar
+                            barStyle="dark-content"
+                            translucent
+                            backgroundColor={'transparent'}
+                        />
+                        <View style={styles.header}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <TouchableOpacity onPress={() => props.navigation.goBack()}>
+                                    <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
+                                </TouchableOpacity>
+                                <Text style={styles.headertext}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName} - {bookingDetails?.coach?.uniqueId}</Text>
                             </View>
-                        </Tab>
-                        <Tab heading="Contact Information" tabStyle={[styles.tab, { borderTopRightRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopRightRadius: 30 }]}
-                            textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
-                            <View style={[styles.mainView, { marginTop: 10 }]}>
-                                <Text style={styles.text}>Mobile Phone</Text>
-                                <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
-                            </View>
-                            <View style={styles.mainView}>
-                                <Text style={styles.text}>Email</Text>
-                                <Text style={styles.text1}>{bookingDetails?.coach?.email}</Text>
-                            </View>
-                            <View style={styles.mainView}>
-                                <Text style={styles.text}>Whatsapp</Text>
-                                <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
-                            </View>
-                        </Tab>
-                    </Tabs>
-                </View>
-                <DetailsModal setModalVisible={setModalVisible} modalVisible={modalVisible} navigation={props.navigation} />
-            </View>
-        </Container>
+                            <TouchableOpacity onPress={() => setModalVisible(true)}>
+                                <Image style={styles.headerLeft} source={require('../../assets/menu.png')} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.bottom}>
+                            <Tabs tabBarUnderlineStyle={[styles.tabUnderline]} tabContainerStyle={{ elevation: 0, borderTopLeftRadius: 30, borderTopRightRadius: 30, height: 70, borderWidth: 0 }}>
+                                <Tab heading="Details" tabStyle={[styles.tab, { borderTopLeftRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopLeftRadius: 30 }]}
+                                    textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
+                                    {/* <View style={{ height: 380, backgroundColor: 'red' }}> */}
+                                    <View style={styles.border}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                                            <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails') }}>
+                                                <Image source={require('../../assets/splash.jpg')} style={styles.profile} />
+                                            </TouchableOpacity>
+                                            <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>
+                                        </View>
+                                        <View style={styles.mainView}>
+                                            <Text style={styles.text1}>Requirements</Text>
+                                            <Image style={styles.image} source={require('../../assets/down-arrow.png')} />
+                                            {/* <Text style={styles.text1}>Baseball</Text> */}
+                                        </View>
+                                        <View style={styles.mainView}>
+                                            <Text style={styles.text}>Sports</Text>
+                                            <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingType?.title}</Text>
+                                        </View>
+                                        <View style={styles.mainView}>
+                                            <Text style={styles.text}>Age Group</Text>
+                                            <Text style={styles.text1}>{bookingDetails?.athleteRequest?.coachAgeGroup}</Text>
+                                        </View>
+                                        <View style={styles.mainView}>
+                                            <Text style={styles.text}>Instruction type</Text>
+                                            <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingSubCategory?.title}</Text>
+                                        </View>
+                                        <View style={styles.mainView}>
+                                            <Text style={styles.text}>Skill type</Text>
+                                            <Text style={styles.text1}>{bookingDetails?.athleteRequest?.subCategorySkill?.skill}</Text>
+                                        </View>
+                                        <Text style={[styles.text, { marginLeft: 10 }]}>Video</Text>
+                                        <Image style={styles.video} source={require('../../assets/splash.jpg')} />
+                                        {/* </View> */}
+                                    </View>
+                                    <View style={{ flex: 0.15, justifyContent: "flex-end", alignItems: 'center' }}>
+                                        <Snackbar
+                                            visible={visible}
+                                            onDismiss={() => setVisible(!visible)}
+                                            action={{
+                                                label: 'OK',
+                                                onPress: () => {
+                                                    console.log("hello")
+                                                },
+                                            }}>
+                                            {message}
+                                        </Snackbar>
+                                    </View>
+                                </Tab>
+                                <Tab heading="Contact Information" tabStyle={[styles.tab, { borderTopRightRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopRightRadius: 30 }]}
+                                    textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
+                                    <View style={[styles.mainView, { marginTop: 10 }]}>
+                                        <Text style={styles.text}>Mobile Phone</Text>
+                                        <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
+                                    </View>
+                                    <View style={styles.mainView}>
+                                        <Text style={styles.text}>Email</Text>
+                                        <Text style={styles.text1}>{bookingDetails?.coach?.email}</Text>
+                                    </View>
+                                    <View style={styles.mainView}>
+                                        <Text style={styles.text}>Whatsapp</Text>
+                                        <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
+                                    </View>
+                                </Tab>
+                            </Tabs>
+                        </View>
+
+                    </View>}
+            {/* </Container> */}
+            <DetailsModal firstName={bookingDetails?.coach?.firstName} lastName={bookingDetails?.coach?.lastName} loading={modalLoading} onRequest={() => { handleRequestRevision() }} onPress={() => { handleCompeletion() }} setModalVisible={setModalVisible} modalVisible={modalVisible} navigation={props.navigation} />
+        </>
     );
 };
 
@@ -272,6 +364,7 @@ const styles = StyleSheet.create({
     },
     border:
     {
+        flex: 0.8,
         width: '90%',
         alignSelf: 'center',
         borderWidth: 1,
