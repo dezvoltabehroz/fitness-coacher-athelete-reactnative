@@ -100,7 +100,7 @@ const SplashScreen = (props) => {
         backgroundColor={'transparent'}
       />
       <ImageBackground
-        source={require('../../assets/splash.jpg')}
+        source={require('../../assets/splash.png')}
         style={styles.image}>
         {/* <View style={{ flex: .5, alignItems: 'center', justifyContent: 'center' }}>
           <Image source={require('../../assets/logo.png')} style={styles.logo} />

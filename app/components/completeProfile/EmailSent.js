@@ -14,6 +14,7 @@ import { FontFamily } from "../../style/typograpy";
 import { Colors } from "../../style/colors";
 import { AuthServices } from "../../services";
 import { Snackbar } from 'react-native-paper';
+import RegisterationModal from '../../common/RegisterationModal';
 // import * as verifyEmailService from "../../../services/VerifyEmail";
 // import * as resendOtpService from "../../../services/ResendCode";
 import NetInfo from "@react-native-community/netinfo";
@@ -21,12 +22,13 @@ import { errorUtils } from "../../common/Utilities";
 import Container from "../../common/Container";
 
 const EmailSent = (props) => {
+  const [modalVisible, setModalVisible] = useState(false)
   const [code, setCode] = useState("");
   const [checkCode, setCheckCode] = useState("");
   const [visible, setVisible] = useState(false)
   const [message, setMessage] = useState("")
   const [state, setState] = useState({
-    email: "",
+    email: props.route.params.email,
   });
 
   const [checkEmail, setCheckEmail] = useState(false);
@@ -89,17 +91,19 @@ const EmailSent = (props) => {
     console.log("userdata is", verificationCode);
 
     try {
-      let response = await AuthServices.verifyOtp(
-        verificationCode
-      );
+      let response = await AuthServices.verifyOtp(verificationCode);
       if (response.data.success != undefined && response.data.success == true) {
         console.log("response", response);
-        props.navigation.navigate("Login");
+        setModalVisible(!modalVisible)
+        // props.navigation.replace("Login");
+
       } else {
-        console.log("error in service");
+        setMessage(`${response.data.msg}`)
+        setVisible(true);
       }
     } catch (error) {
-      setMessage(`${errorUtils.getError(err)}`)
+      console.log(error.response.data)
+      setMessage(`${errorUtils.getError(error)}`)
       setVisible(true);
       console.log(error);
     }
@@ -114,12 +118,15 @@ const EmailSent = (props) => {
       let response = await AuthServices.reSendOtp(newOtp);
       if (response.data.success != undefined && response.data.success == true) {
         console.log("response", response);
+        setMessage(`${response.data.msg}`)
+        setVisible(true);
         props.navigation.navigate("Login");
       } else {
-        console.log("error in service");
+        setMessage(`${response.data.msg}`)
+        setVisible(true);
       }
     } catch (error) {
-      setMessage(`${errorUtils.getError(err)}`)
+      setMessage(`${errorUtils.getError(error)}`)
       setVisible(true);
       console.log(error);
     }
@@ -127,82 +134,73 @@ const EmailSent = (props) => {
 
   return (
     <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={{ paddingBottom: "100%" }}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("../../assets/coacherlogo.png")}
-              style={styles.logo}
-            />
-            <Text style={{ textAlign: "center" }}>
-              Please enter the code sent to your email address to Verfiy your
-              Account.
+      <View style={styles.safeArea}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/coacherlogo.png")}
+            style={styles.logo}
+          />
+          <Text style={{ textAlign: "center" }}>
+            Please enter the code sent to your email address to Verfiy your
+            Account.
           </Text>
-          </View>
+        </View>
 
-          <View style={styles.inputContainer}>
-            <Input
-              text={"Enter your email here"}
-              value={state.email}
-              onChangeText={(value) => {
-                _onHandleChange("email", value);
-                setCheckEmail(false);
-              }}
-            />
-            {checkEmail == true && (
-              <Text style={styles.errorStyle}>Code cannot be empty</Text>
-            )}
-            <Input
-              text={"Enter your code here"}
-              value={code}
-              onChangeText={(value) => {
-                _onHandleChange("code", value);
-                setCheckCode(false);
-              }}
-            />
-            {checkCode == true && (
-              <Text style={styles.errorStyle}>Code cannot be empty</Text>
-            )}
+        <View style={styles.inputContainer}>
+          <Input
+            text={"Email"}
+            value={state.email}
+            editable={false}
+            onChangeText={(value) => {
+              _onHandleChange("email", value);
+              setCheckEmail(false);
+            }}
+          />
+          {checkEmail == true && (
+            <Text style={styles.errorStyle}>Code cannot be empty</Text>
+          )}
+          <Input
+            text={"Verification Code"}
+            value={code}
+            onChangeText={(value) => {
+              _onHandleChange("code", value);
+              setCheckCode(false);
+            }}
+          />
+          {checkCode == true && (
+            <Text style={styles.errorStyle}>Code cannot be empty</Text>
+          )}
 
-            <TouchableOpacity
-              style={styles.btnStyle}
-              onPress={() => checkNetwork()}
-            >
-              <Text style={styles.btnText}>Verify</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.btnStyle}
-              onPress={() => resendCode()}
-            >
-              <Text style={styles.btnText}>Resend Code</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.snackbarContainerStyle}>
-            <Snackbar
-              visible={visible}
-              onDismiss={() => setVisible(!visible)}
-              action={{
-                label: 'OK',
-                onPress: () => {
-                  console.log("hello")
-                },
-              }}>
-              {message}
-            </Snackbar>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+          <TouchableOpacity
+            style={styles.btnStyle}
+            onPress={() => checkNetwork()}
+          >
+            <Text style={styles.btnText}>Verify</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.btnStyle}
+            onPress={() => resendCode()}
+          >
+            <Text style={styles.btnText}>Resend Code</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <RegisterationModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        navigation={props.navigation} />
     </Container>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
     backgroundColor: Colors.backgroundColor,
-    height: "100%",
+    // height: "100%",
   },
   snackbarContainerStyle: {
-    top: '10%',
+    // top: '10%',
     alignItems: "center"
   },
   logoContainer: {
@@ -218,7 +216,7 @@ const styles = StyleSheet.create({
     marginBottom: "10%",
   },
   inputContainer: {
-    height: "100%",
+    // height: "100%",
     justifyContent: "space-evenly",
     // backgroundColor: "pink",
   },
@@ -226,6 +224,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.buttonColor,
     width: "80%",
     height: 50,
+    marginTop: "5%",
+    borderRadius: 15,
     alignSelf: "center",
     justifyContent: "center",
     alignItems: "center",

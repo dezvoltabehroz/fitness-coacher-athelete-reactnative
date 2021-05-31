@@ -104,7 +104,7 @@ const PreviewScreen = (props) => {
                     <Text style={styles.text1}>Infield, Outfield, Catching</Text>
                 </View> */}
                 <Text style={styles.text}>Video</Text>
-                <Image style={styles.video} source={require('../../assets/splash.jpg')} />
+                <Image style={styles.video} source={require('../../assets/splash.png')} />
                 <Text style={styles.text}>Notes</Text>
                 <Text style={styles.text1}>{data.note}</Text>
                 <Button text={'Post Request'} onPress={() => { setModalVisible(true) }} />

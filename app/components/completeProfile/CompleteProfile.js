@@ -48,7 +48,7 @@ const CompleteProfile = ({ navigation, route }) => {
     const [country, setCountry] = useState("")
     const [address, setAddress] = useState("")
     const [phoneNumber, setPhoneNumber] = useState("")
-    const [submit, setSubmit] = useState(false)
+    // const [submit, setSubmit] = useState(false)
     const [checkAgeGroup, setCheckAgeGroup] = useState(false);
     const [image, setImage] = useState('')
     const phoneRef = React.createRef(null);
@@ -78,6 +78,10 @@ const CompleteProfile = ({ navigation, route }) => {
     ]);
 
     const [prev, setPrev] = useState(0);
+
+    const [state, setState] = useState({
+        submit: false,
+    });
 
     const onSelect = async (country) => {
         console.log(country)
@@ -118,8 +122,9 @@ const CompleteProfile = ({ navigation, route }) => {
 
 
     const checkNetwork = async () => {
-        await setSubmit(true)
-        console.log(submit)
+        setState({
+            submit: true
+        })
         console.log("internet called");
         try {
             let state = await NetInfo.fetch();
@@ -138,11 +143,12 @@ const CompleteProfile = ({ navigation, route }) => {
     };
 
     const checkValidations = () => {
-        if (ageGroup && submit && country && address && phoneNumber && date && isPhoneValid(phoneNumber)) {
+        if (ageGroup && state.submit && country && address && phoneNumber && date && isPhoneValid(phoneNumber)) {
             getAtheleteDetails();
         } else {
-            setSubmit(true);
-            console.log(submit)
+            setState({
+                submit: true
+            })
         }
     };
 
@@ -169,7 +175,8 @@ const CompleteProfile = ({ navigation, route }) => {
             .then(response => {
                 if (response.data.success != undefined && response.data.success == true) {
                     console.log("response", response);
-                    setModalVisible(!modalVisible)
+                    navigation.navigate('EmailSent', { email: route.params.email })
+                    // setModalVisible(!modalVisible)
                 } else {
                     console.log("error in service");
                 }
@@ -250,7 +257,7 @@ const CompleteProfile = ({ navigation, route }) => {
                             onCancel={() => hideDatePicker}
                         />
                     </View>
-                    {submit == true && date == "" && (
+                    {state.submit == true && date == "" && (
                         <Text style={styles.errorStyle}>Please select your date of birth</Text>
                     )}
 
@@ -275,7 +282,7 @@ const CompleteProfile = ({ navigation, route }) => {
                             />
                         </TouchableOpacity>
                     </View>
-                    {submit == true && country == '' && (
+                    {state.submit == true && country == '' && (
                         <Text style={styles.errorStyle}>Please select a Country</Text>
                     )}
                     <Input
@@ -286,7 +293,7 @@ const CompleteProfile = ({ navigation, route }) => {
                             setAddress(value);
                         }}
                     />
-                    {submit == true && address == "" && (
+                    {state.submit == true && address == "" && (
                         <Text style={styles.errorStyle}>
                             Address cannot be empty
                         </Text>
@@ -302,10 +309,10 @@ const CompleteProfile = ({ navigation, route }) => {
                         }}
                     />
                     {
-                        submit && phoneNumber == "" ? <Text style={styles.errorStyle}> Phonenumber cannot be empty </Text> : null
+                        state.submit && phoneNumber == "" ? <Text style={styles.errorStyle}> Phonenumber cannot be empty </Text> : null
                     }
                     {
-                        submit && phoneNumber.length && !isPhoneValid(phoneNumber) ? <Text style={[styles.errorStyle]}>Phone number is incomplete </Text> : null
+                        state.submit && phoneNumber.length && !isPhoneValid(phoneNumber) ? <Text style={[styles.errorStyle]}>Phone number is incomplete </Text> : null
                     }
 
 
@@ -339,7 +346,7 @@ const CompleteProfile = ({ navigation, route }) => {
                             );
                         }}
                     />
-                    {submit == true && ageGroup == "" && (
+                    {state.submit == true && ageGroup == "" && (
                         <Text style={styles.errorStyle}>  Please select age group</Text>
                     )}
                     <Button text={'Register'} onPress={() => { checkNetwork() }} />

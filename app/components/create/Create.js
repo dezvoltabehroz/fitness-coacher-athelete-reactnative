@@ -24,7 +24,7 @@ import { TrainingCategoryServices } from '../../services';
 const height = Dimensions.get('window').height
 const width = Dimensions.get('window').width
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-const SettingScreen = (props) => {
+function CreateBooking(props) {
   useEffect(() => {
     getCategories();
     getSkills();
@@ -168,8 +168,20 @@ const SettingScreen = (props) => {
 
   };
 
-  useEffect(() => {
-  }, [submit])
+  const handlePreview = () => {
+    if (submit && instruction && instructor && age && skill && note) {
+      let data = {
+        instructor: instructor,
+        instruction: instruction,
+        ageGroup: age,
+        skill: skill,
+        note: note
+      };
+      props.navigation.navigate('Preview', { data })
+    } else {
+      setSubmit(true)
+    }
+  }
 
   const checkBoxFunc = (iteration) => {
     var subCategory = [...subCategories];
@@ -180,7 +192,7 @@ const SettingScreen = (props) => {
     setInstruction(subCategory[iteration])
     setSubCat(true);
     setSubCategories(subCategory);
-    
+
 
   };
 
@@ -200,6 +212,7 @@ const SettingScreen = (props) => {
             </View>
             :
             <>
+              <Text style={styles.text}>Instructor Types</Text>
               <FlatList
                 data={categories}
                 contentContainerStyle={styles.contentContainerStyle}
@@ -207,12 +220,12 @@ const SettingScreen = (props) => {
                 renderItem={({ item, index }) => {
                   return (
                     <View style={styles.outerView}>
-                      <View style={[styles.innerView1]}>
-                        <MaterialIcons onPress={() => selectingTrainingType(index)}
+                      <TouchableOpacity onPress={() => selectingTrainingType(index)} style={[styles.innerView1]}>
+                        <MaterialIcons
                           size={20}
                           name={item.selected ? "check-box" : "check-box-outline-blank"} />
                         <Text style={styles.innertext}>{item.title}</Text>
-                      </View>
+                      </TouchableOpacity>
                     </View>
                   );
                 }}
@@ -232,12 +245,12 @@ const SettingScreen = (props) => {
                   renderItem={({ item, index }) => {
                     return (
                       <View style={styles.outerView}>
-                        <View style={[styles.innerView1]}>
-                          <MaterialIcons onPress={() => checkBoxFunc(index)}
+                        <TouchableOpacity onPress={() => checkBoxFunc(index)} style={[styles.innerView1]}>
+                          <MaterialIcons
                             size={20}
                             name={item.selected ? "check-box" : "check-box-outline-blank"} />
                           <Text style={styles.innertext}>{item.title}</Text>
-                        </View>
+                        </TouchableOpacity>
                       </View>
                     );
                   }}
@@ -257,12 +270,12 @@ const SettingScreen = (props) => {
                 renderItem={({ item, index }) => {
                   return (
                     <View style={styles.outerView}>
-                      <View style={[styles.innerView1]}>
-                        <MaterialIcons onPress={() => selectingSkills(index)}
+                      <TouchableOpacity onPress={() => selectingSkills(index)} style={[styles.innerView1]}>
+                        <MaterialIcons
                           size={20}
                           name={item.selected ? "check-box" : "check-box-outline-blank"} />
                         <Text style={styles.innertext}>{item.skill}</Text>
-                      </View>
+                      </TouchableOpacity>
                     </View>
                   );
                 }}
@@ -282,21 +295,21 @@ const SettingScreen = (props) => {
                 renderItem={({ item, index }) => {
                   return (
                     <View style={styles.outerView}>
-                      <View style={[styles.innerView1]}>
-                        <MaterialIcons onPress={() => {
-                          let array = arr;
-                          array[prev].flag = false;
-                          array[index].flag = true;
-                          setArr(arr);
-                          // ageArr.push({ ageGroup: item.age })
-                          // setAge(ageArr)
-                          setAge(item.age);
-                          setPrev(index);
-                        }}
+                      <TouchableOpacity onPress={() => {
+                        let array = arr;
+                        array[prev].flag = false;
+                        array[index].flag = true;
+                        setArr(arr);
+                        // ageArr.push({ ageGroup: item.age })
+                        // setAge(ageArr)
+                        setAge(item.age);
+                        setPrev(index);
+                      }} style={[styles.innerView1]}>
+                        <MaterialIcons
                           size={20}
                           name={item.flag && age == item.age ? "check-box" : "check-box-outline-blank"} />
                         <Text style={styles.innertext}>{item.age}</Text>
-                      </View>
+                      </TouchableOpacity>
                     </View>
                   );
                 }}
@@ -321,21 +334,7 @@ const SettingScreen = (props) => {
                   Please add detail note
                 </Text>
               )}
-              <Button text={'Create Booking Request'} onPress={() => {
-                if (submit && instruction && instructor && age && skill && note) {
-                  let data = {
-                    instructor: instructor,
-                    instruction: instruction,
-                    ageGroup: age,
-                    skill: skill,
-                    note: note
-                  };
-                  props.navigation.navigate('Preview', { data })
-                } else {
-                  setSubmit(true)
-                }
-
-              }} />
+              <Button text={'Create Booking Request'} onPress={async () => {setSubmit(true);handlePreview()}} />
               <View style={{ height: 50 }}></View>
             </>}
       </ScrollView>
@@ -498,4 +497,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default SettingScreen;
+export default CreateBooking;

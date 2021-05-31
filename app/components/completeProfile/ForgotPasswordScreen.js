@@ -97,40 +97,38 @@ const ForgotPassword = (props) => {
   return (
     <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={{ paddingBottom: "100%" }}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("../../assets/coacherlogo.png")}
-              style={styles.logo}
-            />
-            <Text style={{ textAlign: "center" }}>
-              Forgot your password? No worries! Enter your email to get an OTP
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/coacherlogo.png")}
+            style={styles.logo}
+          />
+          <Text style={{ textAlign: "center" }}>
+            Forgot your password? No worries! Enter your email to get an OTP
           </Text>
-          </View>
+        </View>
 
-          <View style={styles.inputContainer}>
-            <Input
-              text={"Enter your email here"}
-              value={state.email}
-              onChangeText={(value) => {
-                _onHandleChange("email", value);
-                setCheckEmail(false);
-              }}
-            />
-            {checkEmail == true && (
-              <Text style={styles.errorStyle}>Code cannot be empty</Text>
-            )}
-            <TouchableOpacity
-              style={styles.btnStyle}
-              onPress={() => checkNetwork()}
-            >{
-                loading ?
-                  <ActivityIndicator color={'white'} />
-                  :
-                  <Text style={styles.btnText}>Get new OTP</Text>}
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+        <View style={styles.inputContainer}>
+          <Input
+            text={"Enter your email here"}
+            value={state.email}
+            onChangeText={(value) => {
+              _onHandleChange("email", value);
+              setCheckEmail(false);
+            }}
+          />
+          {checkEmail == true && (
+            <Text style={styles.errorStyle}>Code cannot be empty</Text>
+          )}
+          <TouchableOpacity
+            style={styles.btnStyle}
+            onPress={() => checkNetwork()}
+          >{
+              loading ?
+                <ActivityIndicator color={'white'} />
+                :
+                <Text style={styles.btnText}>Get new OTP</Text>}
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </Container>
   );
@@ -138,15 +136,17 @@ const ForgotPassword = (props) => {
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+    justifyContent:"center",
     backgroundColor: Colors.backgroundColor,
-    height: "100%",
+    // height: "100%",
   },
   snackbarContainerStyle: {
     top: '10%',
     alignItems: "center"
   },
   logoContainer: {
-    height: "60%",
+    // height: "60%",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -158,13 +158,15 @@ const styles = StyleSheet.create({
     marginBottom: "10%",
   },
   inputContainer: {
-    height: "100%",
+    // height: "100%",
     justifyContent: "space-evenly",
   },
   btnStyle: {
     backgroundColor: Colors.buttonColor,
     width: "80%",
     height: 50,
+    marginTop: "5%",
+    borderRadius: 15,
     alignSelf: "center",
     justifyContent: "center",
     alignItems: "center",

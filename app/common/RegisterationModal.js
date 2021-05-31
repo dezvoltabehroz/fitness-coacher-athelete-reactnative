@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -12,13 +12,13 @@ import {
   Dimensions,
   TouchableOpacity
 } from 'react-native';
-import {FontFamily} from '../style/typograpy';
-import {Colors} from '../style/colors';
+import { FontFamily } from '../style/typograpy';
+import { Colors } from '../style/colors';
 import Modal from 'react-native-modal';
 import { Col } from 'native-base';
 import Button from './Button';
 const height = Dimensions.get('window').height;
-const RegisterationModal = ({modalVisible,setModalVisible,navigation}) => {
+const RegisterationModal = ({ modalVisible, setModalVisible, navigation }) => {
   return (
     <Modal
       style={styles.modal}
@@ -30,13 +30,13 @@ const RegisterationModal = ({modalVisible,setModalVisible,navigation}) => {
       swipeDirection={['up']}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
-      >
+    >
       <View style={styles.container}>
-       <Image source={require('../assets/lifetime.png')} style={styles.image} />
-       <Text style={styles.text}>Thank you for the registeration</Text>
-       <Text style={styles.text1}>You will be notified via email, once your profile has been approved. Thank you for your patience.</Text>
-     <Button onPress={()=>{setModalVisible(false), navigation.navigate('EmailSent')}} flag={true} text={'Ok'}/>
-    
+        <Image source={require('../assets/lifetime.png')} style={styles.image} />
+        <Text style={styles.text}>Registeration SuccessFull</Text>
+        <Text style={styles.text1}>Thank you for the registeration</Text>
+        <Button onPress={() => { setModalVisible(false), navigation.replace('Login') }} flag={true} text={'Ok'} />
+
       </View>
     </Modal>
   );
@@ -52,30 +52,30 @@ const styles = StyleSheet.create({
     height: (height * 38) / 100,
     borderRadius: 20,
     alignItems: 'center',
-    paddingHorizontal:20
+    paddingHorizontal: 20
     // justifyContent: 'center',
   },
   image:
   {
-      height:30,
-      width:30,
-      marginTop:50
+    height: 30,
+    width: 30,
+    marginTop: 50
   },
   text:
   {
-      fontFamily:FontFamily.helveticaBold,
-      fontSize:15,
-      marginTop:10
+    fontFamily: FontFamily.helveticaBold,
+    fontSize: 15,
+    marginTop: 10
 
   },
   text1:
   {
-      fontFamily:FontFamily.helveticaLight,
-      fontSize:15,
-      marginTop:10,
-      color:Colors.blackColor,
-      width:'95%',
-      textAlign:'center'
+    fontFamily: FontFamily.helveticaLight,
+    fontSize: 15,
+    marginTop: 10,
+    color: Colors.blackColor,
+    width: '95%',
+    textAlign: 'center'
 
   }
 

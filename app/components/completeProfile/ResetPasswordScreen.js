@@ -118,8 +118,7 @@ const ResetPassword = ({ navigation, route }) => {
 
   return (
     <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={{ paddingBottom: "100%" }}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.logoContainer}>
           <Image
             source={require("../../assets/coacherlogo.png")}
@@ -158,6 +157,8 @@ const ResetPassword = ({ navigation, route }) => {
           <Input
             text={"Enter your code here"}
             value={code}
+            maxLength={4}
+            keyboardType={"number-pad"}
             onChangeText={(value) => {
               _onHandleChange("code", value);
               setCheckCode(false);
@@ -176,24 +177,25 @@ const ResetPassword = ({ navigation, route }) => {
                 <Text style={styles.btnText}>Update</Text>}
           </TouchableOpacity>
         </View>
-       
-      </ScrollView>
-    </SafeAreaView>
+
+      </SafeAreaView>
     </Container>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+    justifyContent: "center",
     backgroundColor: Colors.backgroundColor,
-    height: "100%",
+    // height: "100%",
   },
   snackbarContainerStyle: {
     top: '10%',
     alignItems: "center"
   },
   logoContainer: {
-    height: "40%",
+    // height: "40%",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -205,7 +207,7 @@ const styles = StyleSheet.create({
     marginBottom: "10%",
   },
   inputContainer: {
-    height: "100%",
+    // height: "100%",
     justifyContent: "space-evenly",
     // backgroundColor: "pink",
   },
@@ -213,6 +215,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.buttonColor,
     width: "80%",
     height: 50,
+    marginTop: "5%",
+    borderRadius: 15,
     alignSelf: "center",
     justifyContent: "center",
     alignItems: "center",

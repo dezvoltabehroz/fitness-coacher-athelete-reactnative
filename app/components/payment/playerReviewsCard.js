@@ -24,7 +24,7 @@ const PlayerReviewsCard = (props) => {
         <View style={styles.container}>
             <View style={styles.main}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Image source={require('../../assets/splash.jpg')} style={styles.profile} />
+                    <Image source={require('../../assets/splash.png')} style={styles.profile} />
                     <View style={{ marginLeft: 10 }}>
                         <Text style={styles.text}>Dmitri Albov</Text>
                         <Text style={styles.text1}>Feb 27 ,2021</Text>

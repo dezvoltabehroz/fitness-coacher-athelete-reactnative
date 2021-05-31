@@ -30,7 +30,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
     //     <View style={styles.container}>
     //         <View style={styles.outer}>
     //             <View style={styles.inner}>
-    //                 <Image source={require('../../assets/splash.jpg')} style={styles.image} />
+    //                 <Image source={require('../../assets/splash.png')} style={styles.image} />
     //                 <View 
     //                  style={{
     //                     // justifyContent:'',
@@ -128,7 +128,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
                 <View style={styles.outer}>
                     <View style={styles.inner}>
                         <Image
-                            source={require('../../assets/splash.jpg')}
+                            source={require('../../assets/splash.png')}
                             style={styles.image}
                         />
                         <View>

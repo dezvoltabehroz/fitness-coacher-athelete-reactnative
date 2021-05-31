@@ -37,7 +37,7 @@ const Api = {
             "email": email
         }, config)
     },
-    verifyOtp: function (code) {
+    verifyOtp: function (userData) {
         return axiosInstance.post('verify-otp', {
             "email": userData.email,
             "otp": userData.otp

@@ -262,7 +262,7 @@ const AccountSettingsScreen = (props) => {
             image ?
               <Image source={{ uri: image }} style={styles.image} />
               :
-              <Image source={require('../../assets/splash.jpg')} style={styles.image} />}
+              <Image source={require('../../assets/splash.png')} style={styles.image} />}
             <TouchableOpacity onPress={() => launchGallery()} style={styles.imageView}>
               <Image source={require('../../assets/pen.png')} style={styles.pen} />
             </TouchableOpacity>

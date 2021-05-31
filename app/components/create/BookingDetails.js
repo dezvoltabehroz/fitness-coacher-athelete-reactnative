@@ -182,7 +182,7 @@ const BookingDetails = (props) => {
                                     <View style={styles.border}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                                             <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails') }}>
-                                                <Image source={require('../../assets/splash.jpg')} style={styles.profile} />
+                                                <Image source={require('../../assets/splash.png')} style={styles.profile} />
                                             </TouchableOpacity>
                                             <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>
                                         </View>
@@ -208,7 +208,7 @@ const BookingDetails = (props) => {
                                             <Text style={styles.text1}>{bookingDetails?.athleteRequest?.subCategorySkill?.skill}</Text>
                                         </View>
                                         <Text style={[styles.text, { marginLeft: 10 }]}>Video</Text>
-                                        <Image style={styles.video} source={require('../../assets/splash.jpg')} />
+                                        <Image style={styles.video} source={require('../../assets/splash.png')} />
                                         {/* </View> */}
                                     </View>
                                     <View style={{ flex: 0.15, justifyContent: "flex-end", alignItems: 'center' }}>

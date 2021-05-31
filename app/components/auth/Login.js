@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 35
     },
     linkText: {
-        color: "orange",
+        color: Colors.buttonColor,
         marginTop: "5%",
         textAlign: "center",
     },

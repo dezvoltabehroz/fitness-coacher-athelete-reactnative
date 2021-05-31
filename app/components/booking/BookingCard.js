@@ -26,7 +26,7 @@ const BookingCard = (props) => {
     <View style={styles.container}>
       <View style={styles.outer}>
         <View style={styles.inner}>
-          <Image source={props.item.coach.imageUrl != null ? { uri: props.item.coach.imageUrl } : require('../../assets/splash.jpg')}
+          <Image source={props.item.coach.imageUrl != null ? { uri: props.item.coach.imageUrl } : require('../../assets/splash.png')}
             resizeMode="cover" style={styles.image} />
           <View>
             <Text style={styles.text}>{props.item.coach.firstName} {props.item.coach.lastName}</Text>
