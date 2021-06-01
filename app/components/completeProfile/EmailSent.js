@@ -107,7 +107,7 @@ const EmailSent = (props) => {
           console.log("response", response);
           setModalVisible(!modalVisible)
           setLoading(false)
-          props.navigation.replace("Login");
+          // props.navigation.replace("Login");
 
         } else {
           setMessage(`${response.data.msg}`)

@@ -175,5 +175,10 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: FontFamily.helveticaBold,
   },
+  errorStyle: {
+    fontSize: 12,
+    color: "red",
+    paddingLeft: 20,
+  },
 });
 export default ForgotPassword;

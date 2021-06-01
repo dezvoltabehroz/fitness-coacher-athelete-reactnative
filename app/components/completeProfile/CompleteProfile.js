@@ -184,7 +184,7 @@ const CompleteProfile = ({ navigation, route }) => {
             .then(response => {
                 if (response.data.success != undefined && response.data.success == true) {
                     console.log("response", response);
-                    navigation.navigate('EmailSent', { email: route.params.email })
+                    navigation.replace('EmailSent', { email: route.params.email })
                     // setModalVisible(!modalVisible)
                 } else {
                     console.log("error in service");
