@@ -12,7 +12,8 @@ import {
   NativeModules,
   Platform,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy'
@@ -47,7 +48,7 @@ const NotificatinsSettings = (props) => {
             id: props?.user.id,
             token: props?.token
           }
-          await props.authActions.getUserProfile(data, props.navigation.replace)
+          await props.authActions.getUserProfile(data)
         }
         else {
           setMessage(`${res.data.msg}`)
@@ -81,8 +82,11 @@ const NotificatinsSettings = (props) => {
             <View>
               <Text style={styles.text}>Push Notifications</Text>
             </View>
-            <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
-              value={isSwitchOn1} onValueChange={() => handleNotificationSetting()} color={Colors.buttonColor} />
+            {loading ?
+              <ActivityIndicator size={"small"} color={Colors.buttonColor} />
+              :
+              <Switch trackColor={{ true: Colors.buttonColor, false: 'grey' }}
+                value={isSwitchOn1} onValueChange={() => handleNotificationSetting()} color={Colors.buttonColor} />}
           </View>
           <View style={styles.inner}>
             <View>

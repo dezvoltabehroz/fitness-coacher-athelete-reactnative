@@ -60,7 +60,7 @@ const ChangePassword = props => {
 
     const checkValidations = () => {
 
-        if (oldPassword && newPassword && confirmNewPassword && submit && confirmNewPassword == newPassword) {
+        if (oldPassword && newPassword && confirmNewPassword && confirmNewPassword == newPassword) {
             changePassword();
         } else {
             setSubmit(true);
@@ -127,6 +127,7 @@ const ChangePassword = props => {
                             <Input
                                 full={true}
                                 text={"Old Password"}
+                                secureTextEntry={true}
                                 value={oldPassword}
                                 onChangeText={(value) => {
                                     setOldPassword(value);
@@ -140,6 +141,7 @@ const ChangePassword = props => {
                             <Input
                                 full={true}
                                 text={"New Password"}
+                                secureTextEntry={true}
                                 value={newPassword}
                                 onChangeText={(value) => {
                                     setNewPassword(value);
@@ -157,6 +159,7 @@ const ChangePassword = props => {
                                 full={true}
                                 text={"Confirm New Password"}
                                 value={confirmNewPassword}
+                                secureTextEntry={true}
                                 onChangeText={(value) => {
                                     setConfirmNewPassword(value);
                                 }}

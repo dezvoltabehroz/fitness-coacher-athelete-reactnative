@@ -222,6 +222,7 @@ const AccountSettingsScreen = (props) => {
       async (response) => {
         if (response.error) { }
         else if (response.uri != undefined) {
+          setImage(response.uri);
           let userData = {
             fileName: new Date().getTime() + response.fileName,
             fileType: response.type
@@ -244,7 +245,7 @@ const AccountSettingsScreen = (props) => {
                 }).catch((err) => { console.log(err) })
             })
             .catch((err) => { console.log(err) })
-          setImage(response.uri);
+         
         }
       })
   }
