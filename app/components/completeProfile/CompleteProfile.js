@@ -33,6 +33,7 @@ import Calendar from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Container from '../../common/Container';
 import { errorUtils } from '../../common/Utilities';
+import axios from 'axios';
 const height = Dimensions.get('window').height
 const width = Dimensions.get('window').width
 const CompleteProfile = ({ navigation, route }) => {
@@ -48,12 +49,13 @@ const CompleteProfile = ({ navigation, route }) => {
     const [country, setCountry] = useState("")
     const [address, setAddress] = useState("")
     const [phoneNumber, setPhoneNumber] = useState("")
-    // const [submit, setSubmit] = useState(false)
-    const [checkAgeGroup, setCheckAgeGroup] = useState(false);
+    const [submit, setSubmit] = useState(false)
+    const [loading, setLoading] = useState(false);
     const [image, setImage] = useState('')
     const phoneRef = React.createRef(null);
     const [visible, setVisible] = useState(false)
     const [message, setMessage] = useState("")
+    const [, forceRender] = useState({});
     const [arr, setArr] = useState([
         {
             flag: true,
@@ -120,21 +122,26 @@ const CompleteProfile = ({ navigation, route }) => {
         hideDatePicker();
     };
 
+    // useEffect(() => {
+    //     setInterval(forceRender({}), 100);
+    // }, []);
 
     const checkNetwork = async () => {
-        setState({
-            submit: true
-        })
+        await setLoading(true)
+        await setSubmit(true)
         console.log("internet called");
         try {
             let state = await NetInfo.fetch();
             if (state.isConnected == true) {
                 // call your function here
+                await setSubmit(true)
                 checkValidations();
                 // getAtheleteDetails();
             } else {
                 setMessage(`Please check your internet connection and try again`)
                 setVisible(true);
+                setLoading(false)
+                setSubmit(false)
             }
         } catch (error) {
             console.log(error);
@@ -143,12 +150,13 @@ const CompleteProfile = ({ navigation, route }) => {
     };
 
     const checkValidations = () => {
-        if (ageGroup && state.submit && country && address && phoneNumber && date && isPhoneValid(phoneNumber)) {
+        console.log(submit)
+        if (ageGroup.length && country.length && address.length && phoneNumber.length && date && isPhoneValid(phoneNumber)) {
             getAtheleteDetails();
         } else {
-            setState({
-                submit: true
-            })
+            setLoading(false)
+            setSubmit(true)
+
         }
     };
 
@@ -163,6 +171,7 @@ const CompleteProfile = ({ navigation, route }) => {
             email: route.params.email,
             password: route.params.password,
             phone: phoneNumber,
+            imageUrl: image,
             address: address,
             dob: moment(date).format('YYYY-MM-DD'),
             role: 'athlete',
@@ -201,6 +210,29 @@ const CompleteProfile = ({ navigation, route }) => {
                 if (response.error) { }
                 else if (response.uri != undefined) {
                     setImage(response.uri);
+                    let userData = {
+                        fileName: new Date().getTime() + response.fileName,
+                        fileType: response.type
+                    }
+                    console.log("response : ", response);
+                    AuthServices.getUrl(userData)
+                        .then((res) => {
+                            console.log(res.data)
+                            let formData = new FormData();
+                            formData.append(`${userData.fileName}`, {
+                                uri: response.uri,
+                                name: `${new Date().getTime().toString()}.jpg`,
+                                filename: `${new Date().getTime().toString()}.jpg`,
+                                type: 'image/jpg'
+                            })
+                            axios.put(res.data.postUrl, formData)
+                                .then((responseData) => {
+                                    console.log(responseData)
+                                    setImage(res.data.getUrl);
+                                }).catch((err) => { console.log(err) })
+                        })
+                        .catch((err) => { console.log(err) })
+
                 }
             })
     }
@@ -257,7 +289,7 @@ const CompleteProfile = ({ navigation, route }) => {
                             onCancel={() => hideDatePicker}
                         />
                     </View>
-                    {state.submit == true && date == "" && (
+                    {submit == true && date == "" && (
                         <Text style={styles.errorStyle}>Please select your date of birth</Text>
                     )}
 
@@ -282,7 +314,7 @@ const CompleteProfile = ({ navigation, route }) => {
                             />
                         </TouchableOpacity>
                     </View>
-                    {state.submit == true && country == '' && (
+                    {submit == true && country == '' && (
                         <Text style={styles.errorStyle}>Please select a Country</Text>
                     )}
                     <Input
@@ -293,7 +325,7 @@ const CompleteProfile = ({ navigation, route }) => {
                             setAddress(value);
                         }}
                     />
-                    {state.submit == true && address == "" && (
+                    {submit == true && address == "" && (
                         <Text style={styles.errorStyle}>
                             Address cannot be empty
                         </Text>
@@ -309,10 +341,10 @@ const CompleteProfile = ({ navigation, route }) => {
                         }}
                     />
                     {
-                        state.submit && phoneNumber == "" ? <Text style={styles.errorStyle}> Phonenumber cannot be empty </Text> : null
+                        submit && phoneNumber == "" ? <Text style={styles.errorStyle}> Phonenumber cannot be empty </Text> : null
                     }
                     {
-                        state.submit && phoneNumber.length && !isPhoneValid(phoneNumber) ? <Text style={[styles.errorStyle]}>Phone number is incomplete </Text> : null
+                        submit && phoneNumber.length && !isPhoneValid(phoneNumber) ? <Text style={[styles.errorStyle]}>Phone number is incomplete </Text> : null
                     }
 
 
@@ -326,30 +358,30 @@ const CompleteProfile = ({ navigation, route }) => {
                         renderItem={({ item, index }) => {
                             return (
                                 <View style={styles.outerView}>
-                                    <View style={[styles.innerView1]}>
-                                        <MaterialIcons onPress={() => {
-                                            // let ageArr = [...ageGroup];
-                                            let array = arr;
-                                            array[prev].flag = false;
-                                            array[index].flag = true;
-                                            setArr(arr);
-                                            // ageArr.push({ ageGroup: item.age })
-                                            // setAge(ageArr)
-                                            setAgeGroup(item.age);
-                                            setPrev(index);
-                                        }}
+                                    <TouchableOpacity onPress={() => {
+                                        // let ageArr = [...ageGroup];
+                                        let array = arr;
+                                        array[prev].flag = false;
+                                        array[index].flag = true;
+                                        setArr(arr);
+                                        // ageArr.push({ ageGroup: item.age })
+                                        // setAge(ageArr)
+                                        setAgeGroup(item.age);
+                                        setPrev(index);
+                                    }} style={[styles.innerView1]}>
+                                        <MaterialIcons
                                             size={20}
                                             name={item.flag && ageGroup == item.age ? "check-box" : "check-box-outline-blank"} />
                                         <Text style={styles.innertext}>{item.age}</Text>
-                                    </View>
+                                    </TouchableOpacity>
                                 </View>
                             );
                         }}
                     />
-                    {state.submit == true && ageGroup == "" && (
+                    {submit == true && ageGroup == "" && (
                         <Text style={styles.errorStyle}>  Please select age group</Text>
                     )}
-                    <Button text={'Register'} onPress={() => { checkNetwork() }} />
+                    <Button loading={loading} text={'Register'} onPress={() => { checkNetwork() }} />
                     <View style={{ marhinBottom: 20 }}></View>
                 </ScrollView>
                 <RegisterationModal

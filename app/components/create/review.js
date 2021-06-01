@@ -20,14 +20,17 @@ import { FontFamily } from '../../style/typograpy'
 import Button from '../../common/Button'
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import DetailsModal from '../../common/DetailsModal'
-import { Container, Header, Content, Tab, Tabs } from 'native-base';
+import { Header, Content, Tab, Tabs } from 'native-base';
 import StarRating from 'react-native-star-rating';
 import { BookingServices } from '../../services';
 import { connect } from 'react-redux';
 import NetInfo from "@react-native-community/netinfo";
 import { errorUtils } from '../../common/Utilities';
+import Container from '../../common/Container';
 const height = Dimensions.get('window').height
 const BookingDetails = (props) => {
+    let { bookingData } = props.route.params;
+    const [loading, setLoading] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
     const [starCount, setStarCount] = useState(0);
     const [review, setReview] = useState('');
@@ -35,7 +38,7 @@ const BookingDetails = (props) => {
     const [visible, setVisible] = useState(false)
     const [message, setMessage] = useState("")
     const checkNetwork = async () => {
-
+        setLoading(true)
         try {
             let state = await NetInfo.fetch();
             if (state.isConnected == true) {
@@ -43,6 +46,7 @@ const BookingDetails = (props) => {
             } else {
                 setMessage(`Please check your internet connection and try again`)
                 setVisible(true);
+                setLoading(false)
             }
         } catch (error) {
             console.log(error);
@@ -50,19 +54,23 @@ const BookingDetails = (props) => {
         }
     };
     const checkValidations = () => {
-        if (starCount != 0 && submit && review) {
+        if (starCount != 0 && review.length) {
             handleSubmit()
         } else {
             setSubmit(true);
+            setLoading(false)
         }
     }
 
     const handleSubmit = () => {
+        console.log(bookingData.CoachId)
+        console.log(bookingData.AthleteId)
         let userData = {
-            "CoachId": 5,
+            "CoachId": parseInt(bookingData.CoachId),
             "stars": starCount,
             "review": review,
-            "ratingBy": props?.user?.id
+            "ratingBy": parseInt(bookingData.AthleteId),
+            "BookingId": parseInt(bookingData.id)
         }
         BookingServices.addRatingtoCoach(userData, props?.token)
             .then((response) => {
@@ -73,69 +81,75 @@ const BookingDetails = (props) => {
                 else {
                     setMessage(`${response.data.msg}`)
                     setVisible(true);
+                    setLoading(false)
                 }
             })
             .catch((err) => {
+                console.log(err.response.data)
                 setMessage(`${errorUtils.getError(err)}`)
                 setVisible(true);
+                setLoading(false)
             })
     }
+
     return (
-        <View style={styles.container}>
-            <StatusBar
-                barStyle="dark-content"
-                translucent
-                backgroundColor={'transparent'}
-            />
-            <View style={styles.header}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => props.navigation.goBack()}>
-                        <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
-                    </TouchableOpacity>
-                    <Text style={styles.headertext}>ZIMR MATFIELD - CCH67888</Text>
+        <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
+            <View style={styles.container}>
+                <StatusBar
+                    barStyle="dark-content"
+                    translucent
+                    backgroundColor={'transparent'}
+                />
+                <View style={styles.header}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => props.navigation.goBack()}>
+                            <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
+                        </TouchableOpacity>
+                        <Text style={styles.headertext}>{bookingData.coach.firstName} {bookingData.coach.lastName} - CCH67888</Text>
+                    </View>
+
                 </View>
 
-            </View>
+                <View style={styles.bottom}>
 
-            <View style={styles.bottom}>
+                    <View style={styles.border}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', margin: 10, justifyContent: 'center' }}>
+                            <StarRating
+                                disabled={false}
+                                maxStars={5}
+                                starSize={25}
+                                starStyle={{ paddingHorizontal: 5 }}
+                                rating={starCount}
+                                selectedStar={(rating) => setStarCount(rating)}
+                                fullStarColor={'yellow'}
+                            />
 
-                <View style={styles.border}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', margin: 10, justifyContent: 'center' }}>
-                        <StarRating
-                            disabled={false}
-                            maxStars={5}
-                            starSize={25}
-                            starStyle={{ paddingHorizontal: 5 }}
-                            rating={starCount}
-                            selectedStar={(rating) => setStarCount(rating)}
-                            fullStarColor={'yellow'}
-                        />
-
-                    </View>
-                    {
-                        submit && starCount == 0 ? <Text style={styles.errorStyle}> Please rate it cannot be empty </Text> : null
-                    }
-                    <Text style={styles.text1}>Add booking review</Text>
-                    <View >
-                        <TextInput
-                            style={styles.input}
-                            multiline={true}
-                            value={review}
-                            // isActive={isActive}
-                            onChangeText={(e) => setReview(e)}
-                        />
+                        </View>
                         {
-                            submit && review == "" ? <Text style={styles.errorStyle}> Review cannot be empty </Text> : null
+                            submit && starCount == 0 ? <Text style={styles.errorStyle}> Please rate it cannot be empty </Text> : null
                         }
+                        <Text style={styles.text1}>Add booking review</Text>
+                        <View >
+                            <TextInput
+                                style={styles.input}
+                                multiline={true}
+                                value={review}
+                                // isActive={isActive}
+                                onChangeText={(e) => setReview(e)}
+                            />
+                            {
+                                submit && review == "" ? <Text style={styles.errorStyle}> Review cannot be empty </Text> : null
+                            }
+                        </View>
+
+                    </View>
+                    <View style={{ marginHorizontal: 20 }}>
+                        <Button loading={loading} text={'Submit'} onPress={() => checkNetwork()} />
                     </View>
 
                 </View>
-                <View style={{ marginHorizontal: 20 }}>
-                    <Button text={'Submit'} onPress={() => checkNetwork()} />
-                </View>
-               
             </View>
-        </View>
+        </Container>
     );
 };
 

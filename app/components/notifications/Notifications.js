@@ -67,44 +67,47 @@ const NotificationsScreen = (props) => {
 
   return (
     <View style={styles.container}>
-      {
-        loading ?
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <ActivityIndicator size={20} color={'#030E2D'} />
-          </View>
-          :
-          <>
-            <StatusBar
-              barStyle="dark-content"
-              translucent
-              backgroundColor={'transparent'}
-            />
-            <ScrollView style={styles.bottom}>
-              {data.length == 0 ?
-                <View style={{ marginTop: 200, justifyContent: "center", alignItems: "center" }}>
-                  <Text>No notification found!</Text>
-                </View>
-                :
-                <FlatList
-                  data={data}
-                  showsVerticalScrollIndicator={false}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item, index }) => {
-                    return (
-                      <NotificationCard
-                        token={props?.token}
-                        trainingTypes={props?.trainingTypes}
-                        subCategories={props?.subCategories}
-                        skills={props?.skills}
-                        item={item}
-                        navigation={props.navigation} />
 
-                    )
-                  }}
-                />}
-              <View style={{ height: 20 }}></View>
-            </ScrollView>
-          </>}
+      <>
+        <StatusBar
+          barStyle="dark-content"
+          translucent
+          backgroundColor={'transparent'}
+        />
+        <ScrollView style={styles.bottom}>
+          {
+            loading ?
+              <View style={{ flex: 1, marginTop: "50%", justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size={20} color={'#030E2D'} />
+              </View>
+              :
+              <>
+                {data.length == 0 ?
+                  <View style={{ marginTop: 200, justifyContent: "center", alignItems: "center" }}>
+                    <Text>No notification found!</Text>
+                  </View>
+                  :
+                  <FlatList
+                    data={data}
+                    showsVerticalScrollIndicator={false}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item, index }) => {
+                      return (
+                        <NotificationCard
+                          token={props?.token}
+                          trainingTypes={props?.trainingTypes}
+                          subCategories={props?.subCategories}
+                          skills={props?.skills}
+                          item={item}
+                          navigation={props.navigation} />
+                      )
+                    }}
+                  />}
+              </>
+          }
+          <View style={{ height: 20 }}></View>
+        </ScrollView>
+      </>
     </View>
   );
 };

@@ -10,7 +10,8 @@ import {
   Image,
   TextInput,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 import { FontFamily } from '../style/typograpy';
 import { Colors } from '../style/colors';
@@ -18,7 +19,7 @@ import Modal from 'react-native-modal';
 import { Col } from 'native-base';
 import Button from './Button';
 const height = Dimensions.get('window').height;
-const PaymentModal = ({ modalVisible, setModalVisible,onPress, navigation ,setSuccessModalVisible}) => {
+const PaymentModal = ({ modalVisible, setModalVisible, onPress, price, loading, navigation, setSuccessModalVisible }) => {
   return (
     <Modal
       style={styles.modal}
@@ -35,10 +36,18 @@ const PaymentModal = ({ modalVisible, setModalVisible,onPress, navigation ,setSu
       <View style={styles.container}>
         <Image source={require('../assets/credit.png')} style={styles.image} />
         <Text style={styles.text}>Payment Confirmation</Text>
-        <Text style={styles.text1}>You will be charged $219.75 for this booking.</Text>
+        <Text style={styles.text1}>You will be charged ${price} for this booking.</Text>
         <View style={styles.buttonView}>
-          <TouchableOpacity style={styles.button} onPress={() => { onPress(); setModalVisible(false)  }}>
-            <Text style={styles.buttontext}>Confirm Payment</Text>
+          <TouchableOpacity style={styles.button} onPress={() => { onPress(); setModalVisible(false) }}>
+            {
+              loading ?
+                <View style={{ justifyContent: "center", alignItems: "center" }}>
+                  <ActivityIndicator size={20} color={'#FFFFFF'} />
+                </View>
+                :
+                <Text style={styles.buttontext}>Confirm Payment</Text>
+            }
+
           </TouchableOpacity>
           <TouchableOpacity style={styles.button1} onPress={() => { setModalVisible(false) }}>
             <Text style={styles.buttontext1}>Cancel</Text>

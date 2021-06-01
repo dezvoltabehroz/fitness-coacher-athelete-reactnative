@@ -29,10 +29,15 @@ const height = Dimensions.get('window').height
 const PreviewScreen = (props) => {
     let { data } = props.route.params;
     const [modalVisible, setModalVisible] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [confirmLoading, setCofirmLoading] = useState(false)
+    const [resData, setData] = useState({})
+    const [price, setPrice] = useState("")
     const [successModalVisible, setSuccessModalVisible] = useState(false)
     const [message, setMessage] = useState("")
     const [visible, setVisible] = useState(false)
     const handlePostRequest = () => {
+        setLoading(true)
         let userData = {
             "coachAgeGroup": data.ageGroup,
             "TrainingTypeId": data.instructor.id,
@@ -46,56 +51,67 @@ const PreviewScreen = (props) => {
         BookingServices.createRequest(userData, props?.token)
             .then((res) => {
                 console.log(res.data)
-                let data = {
-                    "status": "succeeded",
-                    "RequestId": res.data.result.RequestId
-                }
-                PaymentServices.changeStatusAndSendRequestToCoach(data, props?.token)
-                    .then((response) => {
-                        console.log(response.data)
-                        if (response.data.success) {
-                            setSuccessModalVisible(true)
-                        }
-                    })
-                    .catch((err) => {
-                        setMessage(`${errorUtils.getError(err)}`)
-                        setVisible(true)
-                        console.log("second errror : ", err)
-                    })
+                setPrice(res.data.result.amount)
+                setData(res.data)
+                setModalVisible(true)
+                setLoading(false)
             })
             .catch((err) => {
                 setMessage(`${errorUtils.getError(err)}`)
                 setVisible(true)
+                setLoading(false)
                 console.log("first errror : ", err)
+            })
+    }
+
+    const cofirmPayment = () => {
+        setCofirmLoading(true)
+        let data = {
+            "status": "succeeded",
+            "RequestId": resData.result.RequestId
+        }
+        PaymentServices.changeStatusAndSendRequestToCoach(data, props?.token)
+            .then((response) => {
+                console.log(response.data)
+                if (response.data.success) {
+                    setSuccessModalVisible(true)
+                    setCofirmLoading(false)
+                }
+            })
+            .catch((err) => {
+                setMessage(`${errorUtils.getError(err)}`)
+                setVisible(true)
+                setCofirmLoading(false)
+                console.log("second errror : ", err)
             })
     }
 
     return (
         <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
-        <View style={styles.container}>
-            <StatusBar
-                barStyle="dark-content"
-                translucent
-                backgroundColor={'transparent'}
-            />
-            <ScrollView style={styles.bottom}>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Category</Text>
-                    <Text style={styles.text1}>{data.instructor.title}</Text>
-                </View>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Instruction type</Text>
-                    <Text style={styles.text1}>{data.instruction.title}</Text>
-                </View>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Skill Type</Text>
-                    <Text style={styles.text1}>{data.skill.skill}</Text>
-                </View>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Age Group</Text>
-                    <Text style={styles.text1}>{data.ageGroup}</Text>
-                </View>
-                {/* <View style={styles.mainView}>
+            <View style={styles.container}>
+                <StatusBar
+                    barStyle="dark-content"
+                    translucent
+                    backgroundColor={'transparent'}
+                />
+                <ScrollView style={styles.bottom}>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Category</Text>
+                        <Text style={styles.text1}>{data.instructor.title}</Text>
+                    </View>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Instruction type</Text>
+                        <Text style={styles.text1}>{data.instruction.title}</Text>
+                    </View>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Skill Type</Text>
+                        <Text style={styles.text1}>{data.skill.skill}</Text>
+                    </View>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Age Group</Text>
+                        <Text style={styles.text1}>{data.ageGroup}</Text>
+                    </View>
+                    {/* <View style={styles.mainView}>
                     <Text style={styles.text}>Instruction type</Text>
                     <Text style={styles.text1}>Dartfish Ananlytics</Text>
                 </View>
@@ -103,19 +119,21 @@ const PreviewScreen = (props) => {
                     <Text style={styles.text}>Dartfish Analytics</Text>
                     <Text style={styles.text1}>Infield, Outfield, Catching</Text>
                 </View> */}
-                <Text style={styles.text}>Video</Text>
-                <Image style={styles.video} source={require('../../assets/splash.png')} />
-                <Text style={styles.text}>Notes</Text>
-                <Text style={styles.text1}>{data.note}</Text>
-                <Button text={'Post Request'} onPress={() => { setModalVisible(true) }} />
-                <TouchableOpacity style={styles.button} onPress={() => { props.navigation.goBack() }}>
-                    <Text style={styles.text}>Go Back & Edit</Text>
-                </TouchableOpacity>
-            </ScrollView>
-            <PaymentModal onPress={() => handlePostRequest()} navigation={props.navigation} setModalVisible={setModalVisible} modalVisible={modalVisible} setSuccessModalVisible={setSuccessModalVisible} />
-            <SuccessRequestModal navigation={props.navigation} setSuccessModalVisible={setSuccessModalVisible} successModalVisible={successModalVisible} />
+                    <Text style={styles.text}>Video</Text>
+                    <Image style={styles.video} source={require('../../assets/splash.png')} />
+                    <Text style={styles.text}>Notes</Text>
+                    <Text style={styles.text1}>{data.note}</Text>
+                    <Button loading={loading} text={'Post Request'} onPress={() => { handlePostRequest() }} />
+                    <TouchableOpacity style={styles.button} onPress={() => { props.navigation.goBack() }}>
+                        <Text style={styles.text}>Go Back & Edit</Text>
+                    </TouchableOpacity>
+                </ScrollView>
 
-        </View>
+                <PaymentModal loading={confirmLoading} price={price} onPress={() => handlePostRequest()} navigation={props.navigation} setModalVisible={setModalVisible} modalVisible={modalVisible} setSuccessModalVisible={setSuccessModalVisible} />
+
+                <SuccessRequestModal navigation={props.navigation} setSuccessModalVisible={setSuccessModalVisible} successModalVisible={successModalVisible} />
+
+            </View>
         </Container>
     );
 };

@@ -234,7 +234,7 @@ const AccountSettingsScreen = (props) => {
               formData.append(`${userData.fileName}`, {
                 uri: response.uri,
                 name: `${new Date().getTime().toString()}.jpg`,
-                filename: new Date().getTime().toString() + '.jpg',
+                filename:`${new Date().getTime().toString()}.jpg`,
                 type: 'image/jpg'
               })
               axios.put(res.data.postUrl, formData)

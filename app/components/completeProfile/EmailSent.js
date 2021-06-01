@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ToastAndroid,
+  ActivityIndicator,
 } from "react-native";
 import Input from "../../common/Input";
 import { FontFamily } from "../../style/typograpy";
@@ -26,6 +27,8 @@ const EmailSent = (props) => {
   const [code, setCode] = useState("");
   const [checkCode, setCheckCode] = useState("");
   const [visible, setVisible] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [resetLoading, resetSetLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [state, setState] = useState({
     email: props.route.params.email,
@@ -46,6 +49,7 @@ const EmailSent = (props) => {
   };
 
   const checkNetwork = async () => {
+    setLoading(true)
     try {
       let state = await NetInfo.fetch();
       if (state.isConnected == true) {
@@ -62,13 +66,17 @@ const EmailSent = (props) => {
 
   const checkValidations = () => {
     if (state.email == "") {
+      setLoading(false)
       setCheckEmail(true);
     } else if (code == "") {
+      setLoading(false)
       setCheckCode(true);
     } else if (!validateEmail()) {
+      setLoading(false)
       setMessage(`Please enter a proper email`)
       setVisible(true);
     } else if (String(code).length <= 3) {
+      setLoading(false)
       setMessage(`Code must be 4 characters`)
       setVisible(true);
     } else {
@@ -76,6 +84,9 @@ const EmailSent = (props) => {
       enterCode();
     }
   };
+  // useEffect(() => {
+  //   setLoading(false)
+  // }, [loading])
 
   const validateEmail = () => {
     let email = state.email;
@@ -84,50 +95,52 @@ const EmailSent = (props) => {
   };
 
   const enterCode = async () => {
-    let verificationCode = JSON.stringify({
-      otp: Number(code),
-      email: state.email,
-    });
-    console.log("userdata is", verificationCode);
+      let verificationCode = {
+        otp: parseInt(code),
+        email: `${state.email}`
+      };
+      console.log("userdata is", verificationCode);
 
-    try {
-      let response = await AuthServices.verifyOtp(verificationCode);
-      if (response.data.success != undefined && response.data.success == true) {
-        console.log("response", response);
-        setModalVisible(!modalVisible)
-        // props.navigation.replace("Login");
+      try {
+        let response = await AuthServices.verifyOtp(verificationCode);
+        if (response.data.success != undefined && response.data.success == true) {
+          console.log("response", response);
+          setModalVisible(!modalVisible)
+          setLoading(false)
+          props.navigation.replace("Login");
 
-      } else {
-        setMessage(`${response.data.msg}`)
+        } else {
+          setMessage(`${response.data.msg}`)
+          setVisible(true);
+          setLoading(false)
+        }
+      } catch (error) {
+        console.log(error.response.data)
+        setLoading(false)
+        setMessage(`${errorUtils.getError(error)}`)
         setVisible(true);
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error.response.data)
-      setMessage(`${errorUtils.getError(error)}`)
-      setVisible(true);
-      console.log(error);
-    }
   };
 
   const resendCode = async () => {
-    let newOtp = JSON.stringify({
-      email: state.email,
-    });
-    console.log("new OTP is", newOtp);
+    resetSetLoading(true)
     try {
-      let response = await AuthServices.reSendOtp(newOtp);
+      let response = await AuthServices.reSendOtp(state.email);
       if (response.data.success != undefined && response.data.success == true) {
         console.log("response", response);
         setMessage(`${response.data.msg}`)
         setVisible(true);
-        props.navigation.navigate("Login");
+        resetSetLoading(false)
       } else {
         setMessage(`${response.data.msg}`)
         setVisible(true);
+        resetSetLoading(false)
       }
     } catch (error) {
       setMessage(`${errorUtils.getError(error)}`)
       setVisible(true);
+      resetSetLoading(false)
       console.log(error);
     }
   };
@@ -162,6 +175,7 @@ const EmailSent = (props) => {
           <Input
             text={"Verification Code"}
             value={code}
+            keyboardType={"number-pad"}
             onChangeText={(value) => {
               _onHandleChange("code", value);
               setCheckCode(false);
@@ -172,16 +186,31 @@ const EmailSent = (props) => {
           )}
 
           <TouchableOpacity
+            disabled={loading || resetLoading}
             style={styles.btnStyle}
             onPress={() => checkNetwork()}
           >
-            <Text style={styles.btnText}>Verify</Text>
+            {
+              loading ?
+                <ActivityIndicator size="small" color="white" />
+                :
+                <Text style={styles.btnText}>Verify</Text>
+            }
+
           </TouchableOpacity>
           <TouchableOpacity
+            disabled={loading || resetLoading}
             style={styles.btnStyle}
             onPress={() => resendCode()}
           >
-            <Text style={styles.btnText}>Resend Code</Text>
+            {
+              resetLoading ?
+                <ActivityIndicator size="small" color="white" />
+                :
+                <Text style={styles.btnText}>Resend Code</Text>
+            }
+
+
           </TouchableOpacity>
         </View>
       </View>
@@ -234,5 +263,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: FontFamily.helveticaBold,
   },
+  errorStyle: {
+    fontSize: 12,
+    color: "red",
+    paddingLeft: 20,
+  },
+
 });
 export default EmailSent;

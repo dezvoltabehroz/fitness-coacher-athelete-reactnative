@@ -15,7 +15,7 @@ const Api = {
         return axiosInstance.get(`athlete/getBookings`, configToken(token))
     },
     completedBookings: function (id, token) {
-        return axiosInstance.get(`athlete/getBookings?AthleteId=${id}&status=completed`, configToken(token))
+        return axiosInstance.get(`athlete/getBookings?AthleteId=${id}&status=completionAccepted`, configToken(token))
     },
     createRequest: function (userData, token) {
         return axiosInstance.post('athlete/coachRequest', userData, configToken(token))
@@ -30,7 +30,7 @@ const Api = {
         return axiosInstance.get(`athlete/cancelRequest`, userData, configToken(token))
     },
     addRatingtoCoach: function (userData, token) {
-        return axiosInstance.get(`athlete/coachRating`, userData, configToken(token))
+        return axiosInstance.post(`athlete/coachRating`, userData, configToken(token))
     },
     completionRequest: function (userData, token) {
         return axiosInstance.post(`athlete/completionRequest`, userData, configToken(token))

@@ -156,20 +156,25 @@ function CreateBooking(props) {
   };
 
   const selectingTrainingType = async (iteration) => {
+    
+   
     var categoriesArr = [...categories];
     for (let index = 0; index < categoriesArr.length; index++) {
       categoriesArr[index].selected = false;
     }
     categoriesArr[iteration].selected = true;
     setInstructor(categoriesArr[iteration])
+    setCategoriesLoading(true);
     getSubCategories(categoriesArr[iteration])
     await setCategories(categoriesArr);
+
     await setCat(true);
 
   };
 
   const handlePreview = () => {
-    if (submit && instruction && instructor && age && skill && note) {
+    setSubmit(true);
+    if (instruction != {} && instructor != {} && age != '' && skill != "" && note != "") {
       let data = {
         instructor: instructor,
         instruction: instruction,
@@ -237,24 +242,29 @@ function CreateBooking(props) {
 
               <Text style={styles.text}>Instruction Types</Text>
               <View style={styles.outerView}>
-
-                <FlatList
-                  data={subCategories}
-                  contentContainerStyle={styles.contentContainerStyle}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item, index }) => {
-                    return (
-                      <View style={styles.outerView}>
-                        <TouchableOpacity onPress={() => checkBoxFunc(index)} style={[styles.innerView1]}>
-                          <MaterialIcons
-                            size={20}
-                            name={item.selected ? "check-box" : "check-box-outline-blank"} />
-                          <Text style={styles.innertext}>{item.title}</Text>
-                        </TouchableOpacity>
-                      </View>
-                    );
-                  }}
-                />
+                {
+                  categoriesLoading ?
+                    <View style={{ justifyContent: "center", alignItems: "center" }}>
+                      <ActivityIndicator size={20} color={'#030E2D'} />
+                    </View>
+                    :
+                    <FlatList
+                      data={subCategories}
+                      contentContainerStyle={styles.contentContainerStyle}
+                      keyExtractor={(item, index) => index.toString()}
+                      renderItem={({ item, index }) => {
+                        return (
+                          <View style={styles.outerView}>
+                            <TouchableOpacity onPress={() => checkBoxFunc(index)} style={[styles.innerView1]}>
+                              <MaterialIcons
+                                size={20}
+                                name={item.selected ? "check-box" : "check-box-outline-blank"} />
+                              <Text style={styles.innertext}>{item.title}</Text>
+                            </TouchableOpacity>
+                          </View>
+                        );
+                      }}
+                    />}
               </View>
               {submit && !subCatVal && (
                 <Text style={styles.errorStyle}>
@@ -334,7 +344,7 @@ function CreateBooking(props) {
                   Please add detail note
                 </Text>
               )}
-              <Button text={'Create Booking Request'} onPress={async () => {setSubmit(true);handlePreview()}} />
+              <Button text={'Create Booking Request'} onPress={() => handlePreview()} />
               <View style={{ height: 50 }}></View>
             </>}
       </ScrollView>
