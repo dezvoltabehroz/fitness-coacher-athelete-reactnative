@@ -63,9 +63,9 @@ const BookingDetails = (props) => {
             .then((response) => {
                 if (response.data.success) {
                     console.log(response.data)
-                    if (props?.route?.params?.data.status != "requestCompletion") {
-                        setModalVisible(true);
-                    }
+                    // if (props?.route?.params?.data.status != "requestCompletion") {
+                    //     setModalVisible(true);
+                    // }
                     setBookingDetails(response.data.bookingDetail)
                     setLoading(false)
                 } else {
