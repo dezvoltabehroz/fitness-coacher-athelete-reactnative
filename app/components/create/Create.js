@@ -8,7 +8,7 @@ import {
   StatusBar,
   ImageBackground,
   Image,
-  ToastAndroid,
+  Modal,
   ActivityIndicator,
   FlatList,
   Dimensions,
@@ -16,14 +16,19 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Colors } from '../../style/colors'
-import { RadioButton, Checkbox } from 'react-native-paper';
+import VideoPlayer from 'react-native-video-controls';
+import LinkPreview from 'react-native-link-preview';
+import { Icon } from 'native-base';
 import { FontFamily } from '../../style/typograpy'
 import Button from '../../common/Button'
 import AgeGroupModal from '../../common/ageGroupModal'
-import { TrainingCategoryServices } from '../../services';
+import { AuthServices, TrainingCategoryServices } from '../../services';
+import { connect } from 'react-redux';
+import { launchImageLibrary } from 'react-native-image-picker';
 const height = Dimensions.get('window').height
 const width = Dimensions.get('window').width
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import axios from 'axios';
 function CreateBooking(props) {
   useEffect(() => {
     getCategories();
@@ -31,6 +36,9 @@ function CreateBooking(props) {
   }, [])
   const [modalVisible, setmodalVisible] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [uploading, setUpLoading] = useState(false);
+  const [video, setVideo] = useState("");
+  const [videoModal, setVideoModal] = useState(false)
   const [checked, setChecked] = useState('baseBall')
   const [hitting, sethitting] = useState(false)
   const [pitching, setPitching] = useState(false)
@@ -51,6 +59,7 @@ function CreateBooking(props) {
   const [selectInstructor, setSelectInstructor] = useState({});
   const [instructor, setInstructor] = useState({});
   const [skill, setSkill] = useState({});
+  const [preview, setPreview] = useState("");
   const [instruction, setInstruction] = useState({});
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
@@ -156,8 +165,8 @@ function CreateBooking(props) {
   };
 
   const selectingTrainingType = async (iteration) => {
-    
-   
+
+
     var categoriesArr = [...categories];
     for (let index = 0; index < categoriesArr.length; index++) {
       categoriesArr[index].selected = false;
@@ -174,12 +183,13 @@ function CreateBooking(props) {
 
   const handlePreview = () => {
     setSubmit(true);
-    if (instruction != {} && instructor != {} && age != '' && skill != "" && note != "") {
+    if (instruction != {} && instructor != {} && age != '' && skill != "" && note != "" && video != "") {
       let data = {
         instructor: instructor,
         instruction: instruction,
         ageGroup: age,
         skill: skill,
+        file: video,
         note: note
       };
       props.navigation.navigate('Preview', { data })
@@ -200,6 +210,56 @@ function CreateBooking(props) {
 
 
   };
+
+  const launchGallery = () => {
+
+    launchImageLibrary(
+      {
+        title: "Pick video from storage",
+        mediaType: 'video',
+        path: 'video',
+        includeBase64: true,
+        compressImageQuality: 0.1,
+      },
+      async (response) => {
+        if (response.error) { }
+        else if (response.uri != undefined) {
+          setVideo(response.uri);
+          let userData = {
+            fileName: new Date().getTime() + '_video_' + props.user.id + ".mp4",
+            fileType: 'video/mp4'
+          }
+          console.log("response : ", response);
+          setUpLoading(true);
+          AuthServices.getUrl(userData)
+            .then((res) => {
+              console.log(res.data)
+              let formData = new FormData();
+              formData.append(`${userData.fileName}`, {
+                uri: Platform.OS === 'ios' ? response.uri.replace('file:///', '') : response.uri.replace('file://', ''),
+                name: `${new Date().getTime().toString()}.mp4`,
+                filename: new Date().getTime().toString() + '.mp4',
+                type: 'video/mp4'
+              })
+              axios.put(res.data.postUrl, formData)
+                .then(async (responseData) => {
+                  // await LinkPreview.getPreview(res.data.getUrl)
+                  //   .then(data => {
+
+                  //     console.debug("Data : ", data);
+                  //     setPreview(data.images[0])
+                  //   });
+                  console.log(responseData)
+                  setUpLoading(false)
+                  setVideo(res.data.getUrl);
+                  setPreview(res.data.getUrl)
+                }).catch((err) => { console.log(err); setUpLoading(false) })
+            })
+            .catch((err) => { console.log(err) })
+
+        }
+      })
+  }
 
   return (
     <View style={styles.container}>
@@ -329,14 +389,42 @@ function CreateBooking(props) {
                   Please select age group
                 </Text>
               )}
-              <View style={styles.imageOuter}>
-                <View style={styles.profileView}>
-                  <Image source={require('../../assets/avatar.png')} style={styles.image} />
-                  <Image source={require('../../assets/video.png')} style={[styles.image, { position: 'absolute', left: 40, top: 35 }]} />
+              {
+                uploading ?
+                  <View style={{ justifyContent: "center", alignItems: "center" }}>
+                    <Text style={styles.imageText}>Uploading Video</Text>
+                    <ActivityIndicator size={20} color={'#030E2D'} />
+                  </View>
+                  :
+                  video ?
+                    <TouchableOpacity onPress={() => setVideoModal(!videoModal)}>
+                      <ImageBackground
+                        source={{ uri: preview }}
+                        style={{ height: 150, width: "95%", marginVertical: "5%", marginHorizontal: "5%", }}
+                        imageStyle={{ borderRadius: 20 }}>
+                        <View style={{ flex: 1, }}>
+                          <Icon type={"AntDesign"} onPress={() => { setVideo(""); setPreview("") }} name={"closecircle"} style={{ fontSize: 20, alignItems: "flex-end", color: "black", }} />
+                          <View style={{ justifyContent: "center", alignItems: "center" }}>
+                            <Icon type={"FontAwesome"} name={"play-circle"} style={{ fontSize: 40, color: "lightgray", }} />
+                          </View>
+                        </View>
 
-                </View>
-                <Text style={styles.imageText}>Upload Video/Image</Text>
-              </View>
+                      </ImageBackground>
+                    </TouchableOpacity>
+                    :
+                    <TouchableOpacity onPress={() => { launchGallery() }} style={styles.imageOuter}>
+                      <View style={styles.profileView}>
+                        <Image source={require('../../assets/avatar.png')} style={styles.image} />
+                        <Image source={require('../../assets/video.png')} style={[styles.image, { position: 'absolute', left: 40, top: 35 }]} />
+                      </View>
+                      <Text style={styles.imageText}>Upload Video/Image</Text>
+                    </TouchableOpacity>
+              }
+              {submit && !video && (
+                <Text style={styles.errorStyle}>
+                  Please select a video
+                </Text>
+              )}
               <Text style={[styles.text, { marginTop: 15 }]}>Notes</Text>
               <TextInput value={note} style={styles.input} onChangeText={(val) => setNotes(val)} />
               {submit && !note && (
@@ -344,11 +432,16 @@ function CreateBooking(props) {
                   Please add detail note
                 </Text>
               )}
-              <Button text={'Create Booking Request'} onPress={() => handlePreview()} />
+              <Button disabled={uploading} text={'Create Booking Request'} onPress={() => handlePreview()} />
               <View style={{ height: 50 }}></View>
             </>}
       </ScrollView>
-
+      <Modal visible={videoModal}>
+        <VideoPlayer
+          source={{ uri: video }}
+          onBack={() => setVideoModal(!videoModal)}
+        />
+      </Modal>
       <AgeGroupModal modalVisible={modalVisible} setModalVisible={setmodalVisible} setAge={setAge} />
     </View>
   );
@@ -506,5 +599,9 @@ const styles = StyleSheet.create({
   }
 
 });
+const mapStateToProps = (state) => ({
+  user: state.authReducer.userData || {},
+  token: state.authReducer.userToken || {}
+});
 
-export default CreateBooking;
+export default connect(mapStateToProps)(CreateBooking)

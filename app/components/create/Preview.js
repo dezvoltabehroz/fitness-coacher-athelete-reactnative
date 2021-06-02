@@ -9,7 +9,7 @@ import {
     ImageBackground,
     Image,
     AsyncStorage,
-    NativeModules,
+    Modal,
     Platform,
     Dimensions,
     TextInput
@@ -24,6 +24,8 @@ import PaymentModal from '../../common/PaymentModal'
 import { BookingServices, PaymentServices } from '../../services';
 import { connect } from 'react-redux';
 import { errorUtils } from '../../common/Utilities';
+import { Icon } from 'native-base';
+import VideoPlayer from 'react-native-video-controls';
 import Container from '../../common/Container';
 const height = Dimensions.get('window').height
 const PreviewScreen = (props) => {
@@ -33,6 +35,7 @@ const PreviewScreen = (props) => {
     const [confirmLoading, setCofirmLoading] = useState(false)
     const [resData, setData] = useState({})
     const [price, setPrice] = useState("")
+    const [videoModal, setVideoModal] = useState(false)
     const [successModalVisible, setSuccessModalVisible] = useState(false)
     const [message, setMessage] = useState("")
     const [visible, setVisible] = useState(false)
@@ -44,7 +47,7 @@ const PreviewScreen = (props) => {
             "TrainingSubCategoryId": data.instruction.id,
             "AthleteId": props?.user?.id,
             "SkillId": data.skill.id,
-            "file": "https://www.youtube.com/watch?v=EngW7tLk6R8",
+            "file": data.file,
             "notes": data.note
         }
         console.log(userData)
@@ -120,7 +123,16 @@ const PreviewScreen = (props) => {
                     <Text style={styles.text1}>Infield, Outfield, Catching</Text>
                 </View> */}
                     <Text style={styles.text}>Video</Text>
-                    <Image style={styles.video} source={require('../../assets/splash.png')} />
+                    <TouchableOpacity onPress={() => setVideoModal(!videoModal)}>
+                        <ImageBackground
+                            source={{ uri: data.file }}
+                            style={{ height: 150, width: "95%", marginVertical: "5%", marginHorizontal: "5%", }}
+                            imageStyle={{ borderRadius: 20 }}>
+                            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                                <Icon type={"FontAwesome"} name={"play-circle"} style={{ fontSize: 40, color: "lightgray", }} />
+                            </View>
+                        </ImageBackground>
+                    </TouchableOpacity>
                     <Text style={styles.text}>Notes</Text>
                     <Text style={styles.text1}>{data.note}</Text>
                     <Button loading={loading} text={'Post Request'} onPress={() => { handlePostRequest() }} />
@@ -129,10 +141,15 @@ const PreviewScreen = (props) => {
                     </TouchableOpacity>
                 </ScrollView>
 
-                <PaymentModal loading={confirmLoading} price={price} onPress={() => handlePostRequest()} navigation={props.navigation} setModalVisible={setModalVisible} modalVisible={modalVisible} setSuccessModalVisible={setSuccessModalVisible} />
+                <PaymentModal loading={confirmLoading} price={price} onPress={() => cofirmPayment()} navigation={props.navigation} setModalVisible={setModalVisible} modalVisible={modalVisible} setSuccessModalVisible={setSuccessModalVisible} />
 
                 <SuccessRequestModal navigation={props.navigation} setSuccessModalVisible={setSuccessModalVisible} successModalVisible={successModalVisible} />
-
+                <Modal visible={videoModal}>
+                    <VideoPlayer
+                        source={{ uri: data.file }}
+                        onBack={() => setVideoModal(!videoModal)}
+                    />
+                </Modal>
             </View>
         </Container>
     );

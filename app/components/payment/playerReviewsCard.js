@@ -18,6 +18,7 @@ import {
 import { Colors } from '../../style/colors'
 import { RadioButton, Checkbox } from 'react-native-paper';
 import { FontFamily } from '../../style/typograpy'
+import moment from 'moment';
 const height = Dimensions.get('window').height
 const PlayerReviewsCard = (props) => {
     return (
@@ -27,15 +28,19 @@ const PlayerReviewsCard = (props) => {
                     <Image source={require('../../assets/splash.png')} style={styles.profile} />
                     <View style={{ marginLeft: 10 }}>
                         <Text style={styles.text}>Dmitri Albov</Text>
-                        <Text style={styles.text1}>Feb 27 ,2021</Text>
+                        <Text style={styles.text1}>{moment(props.item.review).format('MMM DD ,YYYY')}</Text>
                     </View>
                 </View>
-                <View style={{ flexDirection: 'row' }}>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                    }}>
                     <Image style={styles.star} source={require('../../assets/star.png')} />
-                    <Text style={[styles.text1, { marginLeft: 10 }]}>4.7</Text>
+                    <Text style={[styles.text1, { marginLeft: 10 }]}>{props.item.star}</Text>
                 </View>
             </View>
-            <Text style={styles.text2}>This is text. This is text. This is text</Text>
+            <Text style={styles.text2}>{props.item.review}</Text>
         </View>
     );
 };
@@ -82,7 +87,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: Colors.textColor,
         fontFamily: FontFamily.helvetica,
-        marginTop:5
+        marginTop: 5
     }
 
 });

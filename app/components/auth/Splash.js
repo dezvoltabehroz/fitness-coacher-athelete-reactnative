@@ -41,14 +41,14 @@ const SplashScreen = (props) => {
             requestUserPermission(userData)
             // await props.authActions.getUserProfile(userData, props.navigation.replace);
           })
-          .catch((err) => console.log(err))
+          .catch(async(err) => { props.authActions.removeUser(props.navigation.replace); console.log(err) })
       } else {
-        props.navigation.replace('Login');
+        props.authActions.removeUser(props.navigation.replace);
       }
     }, 2000);
   }, []);
 
-  
+
   const requestUserPermission = async function (data) {
     try {
       const authStatus = await messaging().hasPermission();
@@ -82,7 +82,7 @@ const SplashScreen = (props) => {
             await props.authActions.getUserProfile(userData, props.navigation.replace);
           } else {
             await props.authActions.getUserProfile(userData, props.navigation.replace);
-            // this.props.actions.removeUser(this.props.navigation.replace)
+
           }
         })
         .catch((err) => { console.log("err : ", err); props.authActions.removeUser(props.navigation.replace) })

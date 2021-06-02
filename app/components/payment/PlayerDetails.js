@@ -20,58 +20,111 @@ import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy'
 import PlayerReviewsCard from './playerReviewsCard'
 import { RadioButton, Checkbox } from 'react-native-paper';
+import { AuthServices } from '../../services';
+import { connect } from 'react-redux';
+import { errorUtils } from '../../common/Utilities';
+import Container from '../../common/Container';
 const height = Dimensions.get('window').height
 const AthleteDetails = (props) => {
-    const [modalVisible, setModalVisible] = useState(false)
+    const [modalVisible, setModalVisible] = useState(false);
+    const [visible, setVisible] = useState(false)
+    const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState("");
+    const [athleteDetails, setAthleteDetails] = useState({})
+    useEffect(() => {
+
+        let userData = {
+            id: props.route.params.id,
+            token: props?.token,
+        }
+        AuthServices.getCoachProfile(userData)
+            .then((res) => {
+                if (res.data.success) {
+                    setAthleteDetails(res.data.requestDetails);
+                    setLoading(false)
+                }
+                else {
+                    setMessage(`${res.data.msg}`);
+                    setVisible(true)
+                    setLoading(false)
+                }
+            })
+            .catch((err) => {
+                setMessage(`${errorUtils.getError(err)}`);
+                setVisible(true)
+                setLoading(false)
+            })
+    }, [])
+
     return (
-        <View style={styles.container}>
-            <StatusBar
-                barStyle="dark-content"
-                translucent
-                backgroundColor={'transparent'}
-            />
-             <View style={styles.header}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => props.navigation.goBack()}>
-                        <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
-                    </TouchableOpacity>
-                    <Text style={styles.headertext}>ZIMR MATFIELD</Text>
-                </View>
+        <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
+            <View style={styles.container}>
+                <StatusBar
+                    barStyle="dark-content"
+                    translucent
+                    backgroundColor={'transparent'}
+                />
+                <View style={styles.header}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => props.navigation.goBack()}>
+                            <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
+                        </TouchableOpacity>
+                        <Text style={styles.headertext}>{athleteDetails.firstName} {athleteDetails.lastName}</Text>
+                    </View>
 
+                </View>
+                <ScrollView style={styles.bottom}>
+                    <View style={{ alignItems: 'center' }}>
+                        <Image
+                           source={{uri:athleteDetails.imageUrl != null ? { uri: athleteDetails.imageUrl } : require('../../assets/splash.png')}}
+                            style={styles.profile}
+                        />
+                    </View>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Name</Text>
+                        <Text style={styles.text1}>{athleteDetails.firstName} {athleteDetails.lastName}</Text>
+                    </View>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Sport</Text>
+                        <Text style={styles.text1}>{athleteDetails.trainingType}</Text>
+                    </View>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Skill Leve;</Text>
+                        <Text style={styles.text1}>{athleteDetails.skill}</Text>
+                    </View>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Instruction type</Text>
+                        {
+                            athleteDetails.map((item) => {
+                                return (<Text style={styles.text1}>{item.title}</Text>)
+
+                            })
+                        }
+                    </View>
+                    <View style={styles.mainView}>
+                        <Text style={styles.text}>Age Group Qualification</Text>
+                        {
+                            athleteDetails.map((item) => {
+                                return (<Text style={styles.text1}>{item.ageGroup}</Text>)
+
+                            })
+                        }
+                    </View>
+                    <Text style={styles.text1}>Reviews</Text>
+                    <FlatList
+                        data={athleteDetails.rating}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item, index }) => {
+                            return (
+                                <PlayerReviewsCard item={item} />
+
+                            )
+                        }}
+                    />
+                    <View style={{ height: 40 }}></View>
+                </ScrollView>
             </View>
-            <ScrollView style={styles.bottom}>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Name</Text>
-                    <Text style={styles.text1}>Zimry Mayfield</Text>
-                </View>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Sport</Text>
-                    <Text style={styles.text1}>Softball</Text>
-                </View>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Skill Leve;</Text>
-                    <Text style={styles.text1}>Division 1</Text>
-                </View>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Instruction type</Text>
-                    <Text style={styles.text1}>Outo=field</Text>
-                </View>
-                <View style={styles.mainView}>
-                    <Text style={styles.text}>Age Group Qualification</Text>
-                    <Text style={styles.text1}>18+</Text>
-                </View>
-                <Text style={styles.text1}>Reviews</Text>
-                <FlatList
-        data={[1,2,3]}
-        keyExtractor={(item,index) =>index.toString()}
-        renderItem={({item,index})=>{return(
-          <PlayerReviewsCard />
-
-        )}}
-        />
-        <View style={{height:40}}></View>
-            </ScrollView>
-        </View>
+        </Container>
     );
 };
 
@@ -88,7 +141,7 @@ const styles = StyleSheet.create({
         marginTop: '4%',
         height: 600,
         paddingHorizontal: 20,
-        paddingTop:20
+        paddingTop: 20
     },
     header:
     {
@@ -150,8 +203,18 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center'
-    }
+    },
+    profile: {
+        height: 75,
+        width: 75,
+        borderRadius: 75,
+      },
 
 });
+const mapStateToProps = (state) => ({
+    user: state.authReducer.userData || {},
+    token: state.authReducer.userToken || {}
+});
 
-export default AthleteDetails;
+
+export default connect(mapStateToProps)(AthleteDetails);

@@ -25,6 +25,7 @@ import { Container, Header, Content, Tab, Tabs } from 'native-base';
 import { BookingServices } from '../../services';
 import { connect } from 'react-redux';
 import moment from 'moment';
+import LinkPreview from 'react-native-link-preview';
 import { errorUtils } from '../../common/Utilities';
 const height = Dimensions.get('window').height
 const BookingDetails = (props) => {
@@ -34,6 +35,8 @@ const BookingDetails = (props) => {
     const [bookingDetails, setBookingDetails] = useState({})
     const [loading, setLoading] = useState(true)
     const [modalLoading, setModalLoading] = useState(false)
+    const [videoModal, setVideoModal] = useState(false)
+    const [preview, setPreview] = useState("");
     // useEffect(() => {
     //     if(props.route)
     //     getBookingDetail();
@@ -60,13 +63,18 @@ const BookingDetails = (props) => {
     const getBookingDetail = () => {
         setLoading(true)
         BookingServices.getBookingDetails(props?.route?.params?.data.id, props?.token)
-            .then((response) => {
+            .then(async(response) => {
                 if (response.data.success) {
                     console.log(response.data)
                     // if (props?.route?.params?.data.status != "requestCompletion") {
                     //     setModalVisible(true);
                     // }
                     setBookingDetails(response.data.bookingDetail)
+                    await LinkPreview.getPreview(response.data.bookingDetail.athleteRequest.file)
+                        .then(data => {
+                            console.debug("Data : ", data);
+                            setPreview(data.images[0])
+                        });
                     setLoading(false)
                 } else {
                     setMessage(`${response.data.msg}`)
@@ -181,7 +189,7 @@ const BookingDetails = (props) => {
                                     {/* <View style={{ height: 380, backgroundColor: 'red' }}> */}
                                     <View style={styles.border}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                                            <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails') }}>
+                                            <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails', { id: bookingDetails.AthleteId }) }}>
                                                 <Image source={require('../../assets/splash.png')} style={styles.profile} />
                                             </TouchableOpacity>
                                             <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>
@@ -245,6 +253,12 @@ const BookingDetails = (props) => {
 
                     </View>}
             {/* </Container> */}
+            <Modal visible={videoModal}>
+                <VideoPlayer
+                    source={{ uri: bookingDetails != {} ? bookingDetails.athleteRequest.file : "" }}
+                    onBack={() => setVideoModal(!videoModal)}
+                />
+            </Modal>
             <DetailsModal firstName={bookingDetails?.coach?.firstName} lastName={bookingDetails?.coach?.lastName} loading={modalLoading} onRequest={() => { handleRequestRevision() }} onPress={() => { handleCompeletion() }} setModalVisible={setModalVisible} modalVisible={modalVisible} navigation={props.navigation} />
         </>
     );

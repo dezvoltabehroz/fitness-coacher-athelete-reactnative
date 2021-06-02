@@ -20,12 +20,12 @@ import { Colors } from '../style/colors'
 const height = Dimensions.get('window').height
 import { FontFamily } from '../style/typograpy'
 
-const Button = ({ text, onPress, flag, loading }) => {
+const Button = ({ text, onPress, flag, loading, disabled }) => {
     useEffect(() => {
 
     })
     return (
-        <TouchableOpacity style={[styles.container, { backgroundColor: flag ? '#ed1c23' : Colors.buttonColor }]} onPress={onPress}>
+        <TouchableOpacity disabled={disabled} style={[styles.container, { backgroundColor: disabled ? 'lightgray' : flag ? '#ed1c23' : Colors.buttonColor }]} onPress={onPress}>
             {
                 loading ?
                     <ActivityIndicator size={20} color="white" />

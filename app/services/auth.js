@@ -21,6 +21,9 @@ const Api = {
         console.log(userData)
         return axiosInstance.get(`athlete/details/${userData.id}`, configToken(userData.token))
     },
+    getCoachProfile: function (id, token) {
+        return axiosInstance.get(`athlete/getCoach/${id}`, configToken(token))
+    },
     updateProfile: function (id, userData, token) {
         return axiosInstance.put(`athlete/update/${id}`, userData, configToken(token))
     },
