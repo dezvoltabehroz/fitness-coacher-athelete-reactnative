@@ -8,7 +8,7 @@ import {
     StatusBar,
     ImageBackground,
     Image,
-    NativeModules,
+    Modal,
     Platform,
     Dimensions,
     TouchableOpacity
@@ -158,7 +158,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
                             ) : (
                                 <>
                                     <TouchableOpacity
-                                        onPress={() => navigation.navigate('Bookingdetails')}>
+                                        onPress={() => navigation.navigate('Bookingdetails', { data: parsedObj })}>
                                         <Text style={styles.text}>{item.body}</Text>
                                     </TouchableOpacity>
 

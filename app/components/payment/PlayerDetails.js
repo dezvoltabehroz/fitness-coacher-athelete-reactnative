@@ -76,35 +76,34 @@ const AthleteDetails = (props) => {
                 <ScrollView style={styles.bottom}>
                     <View style={{ alignItems: 'center' }}>
                         <Image
-                           source={{uri:athleteDetails.imageUrl != null ? { uri: athleteDetails.imageUrl } : require('../../assets/splash.png')}}
+                          source={ athleteDetails?.imageUrl != null ? { uri: athleteDetails?.imageUrl } : require('../../assets/splash.png') }
                             style={styles.profile}
                         />
                     </View>
                     <View style={styles.mainView}>
                         <Text style={styles.text}>Name</Text>
-                        <Text style={styles.text1}>{athleteDetails.firstName} {athleteDetails.lastName}</Text>
+                        <Text style={styles.text1}>{athleteDetails?.firstName} {athleteDetails?.lastName}</Text>
                     </View>
                     <View style={styles.mainView}>
                         <Text style={styles.text}>Sport</Text>
-                        <Text style={styles.text1}>{athleteDetails.trainingType}</Text>
+                        <Text style={styles.text1}>{athleteDetails?.trainingType}</Text>
                     </View>
                     <View style={styles.mainView}>
                         <Text style={styles.text}>Skill Leve;</Text>
-                        <Text style={styles.text1}>{athleteDetails.skill}</Text>
+                        <Text style={styles.text1}>{athleteDetails?.skill}</Text>
                     </View>
                     <View style={styles.mainView}>
                         <Text style={styles.text}>Instruction type</Text>
                         {
-                            athleteDetails.map((item) => {
+                            athleteDetails?.coachTrainingSubCategory?.map((item) => {
                                 return (<Text style={styles.text1}>{item.title}</Text>)
-
                             })
                         }
                     </View>
                     <View style={styles.mainView}>
                         <Text style={styles.text}>Age Group Qualification</Text>
                         {
-                            athleteDetails.map((item) => {
+                            athleteDetails?.ageGroupCoach?.map((item) => {
                                 return (<Text style={styles.text1}>{item.ageGroup}</Text>)
 
                             })
@@ -116,7 +115,7 @@ const AthleteDetails = (props) => {
                         keyExtractor={(item, index) => index.toString()}
                         renderItem={({ item, index }) => {
                             return (
-                                <PlayerReviewsCard item={item} />
+                                <PlayerReviewsCard item={item} image={athleteDetails?.imageUrl} name={`${athleteDetails?.firstName} ${athleteDetails?.lastName}`} />
 
                             )
                         }}
