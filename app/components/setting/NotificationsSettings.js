@@ -31,11 +31,13 @@ const NotificatinsSettings = (props) => {
   const [isSwitchOn2, setIsSwitchOn2] = React.useState(false);
   const [message, setMessage] = useState("")
   const [visible, setVisible] = useState(false)
+  const [loading, setLoading] = React.useState(false);
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
   const onToggleSwitch1 = () => setIsSwitchOn1(!isSwitchOn1);
   const onToggleSwitch2 = () => setIsSwitchOn2(!isSwitchOn2);
 
   const handleNotificationSetting = () => {
+    setLoading(true)
     let userData = {
       "UserId": props.user.id,
       "notification": !isSwitchOn1
@@ -49,16 +51,19 @@ const NotificatinsSettings = (props) => {
             token: props?.token
           }
           await props.authActions.getUserProfile(data)
+          setLoading(false)
         }
         else {
           setMessage(`${res.data.msg}`)
           setVisible(true);
+          setLoading(false)
         }
       })
       .catch((err) => {
         console.log(err.response)
         setMessage(`${errorUtils.getError(err)}`)
         setVisible(true);
+        setLoading(false)
       })
   }
   return (
