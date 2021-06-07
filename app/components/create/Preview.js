@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-    SafeAreaView,
+    TouchableOpacity,
     StyleSheet,
     ScrollView,
     View,
@@ -12,13 +12,13 @@ import {
     Modal,
     Platform,
     Dimensions,
-    TextInput
+    TextInput,
+    ActivityIndicator
 } from 'react-native';
 import { Colors } from '../../style/colors'
 import { RadioButton, Checkbox } from 'react-native-paper';
 import { FontFamily } from '../../style/typograpy'
 import Button from '../../common/Button'
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import SuccessRequestModal from '../../common/SuccesRequest'
 import PaymentModal from '../../common/PaymentModal'
 import { BookingServices, PaymentServices } from '../../services';
@@ -27,8 +27,11 @@ import { errorUtils } from '../../common/Utilities';
 import { Icon } from 'native-base';
 import VideoPlayer from 'react-native-video-controls';
 import Container from '../../common/Container';
-const height = Dimensions.get('window').height
+import ModalS from 'react-native-modal'
+const height = Dimensions.get('window').height;
+import { initStripe, useStripe, CardField } from '@stripe/stripe-react-native';
 const PreviewScreen = (props) => {
+
     let { data } = props.route.params;
     const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -39,6 +42,13 @@ const PreviewScreen = (props) => {
     const [successModalVisible, setSuccessModalVisible] = useState(false)
     const [message, setMessage] = useState("")
     const [visible, setVisible] = useState(false)
+    const [details, setDetails] = useState({})
+    useEffect(() => {
+        initStripe({
+            publishableKey: 'pk_test_51IVaauJYCYbx3gzyXHFSWqkzjQourDKiOCqDybwCgC1DxjXf7ilt5jEeyoHDJWo9SkdD6uIGasM9SomiSTl2HRPQ002trNTCop'
+        });
+    }, []);
+    let { confirmPayment } = useStripe();
     const handlePostRequest = () => {
         setLoading(true)
         let userData = {
@@ -67,26 +77,48 @@ const PreviewScreen = (props) => {
             })
     }
 
-    const cofirmPayment = () => {
-        setCofirmLoading(true)
-        let data = {
-            "status": "succeeded",
-            "RequestId": resData.result.RequestId
-        }
-        PaymentServices.changeStatusAndSendRequestToCoach(data, props?.token)
-            .then((response) => {
-                console.log(response.data)
-                if (response.data.success) {
-                    setSuccessModalVisible(true)
+    const cofirmPaymentFunc = async () => {
+        console.log(confirmLoading)
+        console.log(resData.result.client_secret)
+        setCofirmLoading(true);
+        const billingDetails = {
+            email: 'jenny.rosen@example.com',
+        };
+        const { paymentIntent, error } = await confirmPayment(resData.result.client_secret, {
+            type: 'Card',
+            billingDetails,
+            setupFutureUsage: 'OffSession',
+        });
+
+        if (error) {
+            console.log('Payment confirmation error', error);
+            setMessage(`${errorUtils.getError(error)}`)
+            setVisible(true)
+            setCofirmLoading(false)
+        } else if (paymentIntent) {
+            console.log('Success from promise', paymentIntent);
+            setModalVisible(false)
+            let data = {
+                "status": "succeeded",
+                "RequestId": resData.result.RequestId
+            }
+            PaymentServices.changeStatusAndSendRequestToCoach(data, props?.token)
+                .then((response) => {
+                    console.log(response.data)
+                    if (response.data.success) {
+                        setSuccessModalVisible(true)
+                        setCofirmLoading(false)
+                    }
+                })
+                .catch((err) => {
+                    setMessage(`${errorUtils.getError(err)}`)
+                    setVisible(true)
                     setCofirmLoading(false)
-                }
-            })
-            .catch((err) => {
-                setMessage(`${errorUtils.getError(err)}`)
-                setVisible(true)
-                setCofirmLoading(false)
-                console.log("second errror : ", err)
-            })
+                    console.log("second errror : ", err)
+                })
+        }
+
+
     }
 
     return (
@@ -141,7 +173,7 @@ const PreviewScreen = (props) => {
                     </TouchableOpacity>
                 </ScrollView>
 
-                <PaymentModal loading={confirmLoading} price={price} onPress={() => cofirmPayment()} navigation={props.navigation} setModalVisible={setModalVisible} modalVisible={modalVisible} setSuccessModalVisible={setSuccessModalVisible} />
+                {/* <PaymentModal loading={confirmLoading} price={price} onPress={() => cofirmPayment()} navigation={props.navigation} setModalVisible={setModalVisible} modalVisible={modalVisible} setSuccessModalVisible={setSuccessModalVisible} /> */}
 
                 <SuccessRequestModal navigation={props.navigation} setSuccessModalVisible={setSuccessModalVisible} successModalVisible={successModalVisible} />
                 <Modal visible={videoModal}>
@@ -150,10 +182,154 @@ const PreviewScreen = (props) => {
                         onBack={() => setVideoModal(!videoModal)}
                     />
                 </Modal>
+
             </View>
+            <ModalS
+                style={styles.modal}
+                width={'90%'}
+                isVisible={modalVisible}
+                hasBackdrop={true}
+                backdropColor={Colors.modalOverly}
+                backdropOpacity={0.7}
+                swipeDirection={['up']}
+                animationIn={'slideInUp'}
+                animationOut={'slideOutDown'}
+                onBackdropPress={() => setModalVisible(false)}
+            >
+                <View style={styles.modalcontainer}>
+                    <Image source={require('../../assets/credit.png')} style={styles.modalimage} />
+                    <Text style={styles.modaltext}>Payment Confirmation</Text>
+                    <Text style={styles.modaltext1}>You will be charged ${price} for this booking.</Text>
+                    <CardField
+                        postalCodeEnabled={false}
+                        placeholder={{
+                            number: '4242 4242 4242 4242',
+                        }}
+                        cardStyle={{
+                            backgroundColor: '#FFFFFF',
+                            textColor: '#000000',
+                        }}
+                        style={{
+                            width: '100%',
+                            height: 50,
+                            marginVertical: 30,
+                        }}
+                        onCardChange={(e) => {
+                            console.log('cardDetails', e);
+                            setDetails(e)
+                        }}
+                        onFocus={(focusedField) => {
+                            console.log('focusField', focusedField);
+                        }}
+                    />
+                    <View style={styles.modalbuttonView}>
+                        <TouchableOpacity
+                            disabled={details?.complete == true ? false : true}
+                            style={[styles.modalbutton, { backgroundColor: details?.complete ? Colors.buttonColor : "lightgray" }]}
+                            onPress={() => {cofirmPaymentFunc()}}>
+                            {
+                                confirmLoading ?
+                                    <View style={{ justifyContent: "center", alignItems: "center" }}>
+                                        <ActivityIndicator size={20} color={'#FFFFFF'} />
+                                    </View>
+                                    :
+                                    <Text style={styles.modalbuttontext}>Confirm Payment</Text>
+                            }
+
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.modalbutton1} onPress={() => { setModalVisible(false) }}>
+                            <Text style={styles.modalbuttontext1}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+            </ModalS>
         </Container>
     );
 };
+
+
+const styles1 = StyleSheet.create({
+    modal: {
+        height: (height * 40) / 100,
+    },
+    modalcontainer: {
+        width: '100%',
+        backgroundColor: Colors.whiteColor,
+        height: (height * 50) / 100,
+        borderRadius: 20,
+        alignItems: 'center',
+        // justifyContent: 'center',
+    },
+    modalimage:
+    {
+        height: 40,
+        width: 40,
+        marginTop: 40
+    },
+    modaltext:
+    {
+        fontFamily: FontFamily.helveticaBold,
+        color: 'red',
+        fontSize: 15,
+        marginTop: 10
+
+    },
+    modalbuttontext:
+    {
+        fontFamily: FontFamily.helveticaBold,
+        color: Colors.whiteColor,
+        fontSize: 15,
+
+    },
+    modalbuttontext1:
+    {
+        fontFamily: FontFamily.helveticaBold,
+        color: Colors.textColor,
+        fontSize: 15,
+
+    },
+    modaltext1:
+    {
+        fontFamily: FontFamily.helveticaBold,
+        fontSize: 15,
+        marginTop: 10,
+        color: Colors.blackColor,
+        width: '85%',
+        textAlign: 'center'
+
+    },
+    modalbuttonView:
+    {
+        width: '90%',
+        alignSelf: 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 10
+    },
+    modalbutton:
+    {
+        height: 50,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        // width: '48%',
+        backgroundColor: Colors.buttonColor
+    },
+    modalbutton1:
+    {
+        height: 50,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: Colors.textColor,
+        width: '48%',
+    }
+
+});
+
 
 const styles = StyleSheet.create({
     container: {
@@ -209,6 +385,85 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    modal: {
+        height: (height * 40) / 100,
+    },
+    modalcontainer: {
+        width: '100%',
+        backgroundColor: Colors.whiteColor,
+        height: (height * 50) / 100,
+        borderRadius: 20,
+        alignItems: 'center',
+        // justifyContent: 'center',
+    },
+    modalimage:
+    {
+        height: 40,
+        width: 40,
+        marginTop: 40
+    },
+    modaltext:
+    {
+        fontFamily: FontFamily.helveticaBold,
+        color: 'red',
+        fontSize: 15,
+        marginTop: 10
+
+    },
+    modalbuttontext:
+    {
+        fontFamily: FontFamily.helveticaBold,
+        color: Colors.whiteColor,
+        fontSize: 15,
+
+    },
+    modalbuttontext1:
+    {
+        fontFamily: FontFamily.helveticaBold,
+        color: Colors.textColor,
+        fontSize: 15,
+
+    },
+    modaltext1:
+    {
+        fontFamily: FontFamily.helveticaBold,
+        fontSize: 15,
+        marginTop: 10,
+        color: Colors.blackColor,
+        width: '85%',
+        textAlign: 'center'
+
+    },
+    modalbuttonView:
+    {
+        width: '90%',
+        alignSelf: 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 10
+    },
+    modalbutton:
+    {
+        height: 60,
+        padding: '5%',
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '50%',
+        backgroundColor: Colors.buttonColor
+    },
+    modalbutton1:
+    {
+        height: 60,
+        padding: '5%',
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: Colors.textColor,
+        width:  120,
     }
 
 });
