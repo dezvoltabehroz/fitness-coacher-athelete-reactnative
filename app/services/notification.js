@@ -16,6 +16,9 @@ const Api = {
     },
     notificationSetting: function (userData, token) {
         return axiosInstance.post(`user/notificationSetting`, userData, configToken(token))
+    },
+    notificationRead: function (id, token) {
+        return axiosInstance.put(`user/notification/${id}`, {}, configToken(token))
     }
 };
 

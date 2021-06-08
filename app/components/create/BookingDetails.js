@@ -23,7 +23,7 @@ import Button from '../../common/Button'
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import DetailsModal from '../../common/DetailsModal'
 import { Icon, Header, Content, Tab, Tabs } from 'native-base';
-import { BookingServices } from '../../services';
+import { BookingServices, NotificationServices } from '../../services';
 import { connect } from 'react-redux';
 import moment from 'moment';
 import LinkPreview from 'react-native-link-preview';
@@ -53,6 +53,16 @@ const BookingDetails = (props) => {
     // }, [loading])
     useEffect(() => {
         setLoading(true)
+        if (props?.route?.params?.notificationId) {
+            console.log("condition true")
+            NotificationServices.notificationRead(props?.route?.params?.notificationId, props?.token)
+                .then((res) => {
+                    console.log(res.data)
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+        }
         getBookingDetail()
         // if (props.route.params != undefined) {
         //     const { data } = props?.route?.params;
@@ -180,7 +190,7 @@ const BookingDetails = (props) => {
                                     </TouchableOpacity>
                                     <Text style={styles.headertext}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName} - {bookingDetails?.coach?.uniqueId}</Text>
                                 </View>
-                                <TouchableOpacity disabled={props?.route?.params?.flag==true?false:true} onPress={() => setModalVisible(true)}>
+                                <TouchableOpacity disabled={props?.route?.params?.flag == true ? false : true} onPress={() => setModalVisible(true)}>
                                     <Image style={styles.headerLeft} source={require('../../assets/menu.png')} />
                                 </TouchableOpacity>
                             </View>

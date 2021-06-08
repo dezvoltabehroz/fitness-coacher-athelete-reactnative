@@ -180,7 +180,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
                     </View>
                 </View>
                 {
-                    item.isRead == 1 ?
+                    item.isRead != 1 ?
                         null
                         :
                         item.type == 'completed_booking' || item.type == 'requestCompletion' ? (
@@ -190,7 +190,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
                                     onPress={() => {
                                         console.log(parsedObj.id)
                                         // setModalVisible(!modalVisible)
-                                        navigation.navigate('Bookingdetails', { data: parsedObj, flag: true });
+                                        navigation.navigate('Bookingdetails', { data: parsedObj,notificationId: item.id, flag: true });
                                     }}>
                                     <Text style={styles.text3}>Accept</Text>
                                 </TouchableOpacity>
