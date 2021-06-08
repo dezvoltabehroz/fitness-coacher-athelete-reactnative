@@ -191,7 +191,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => handleRequestRevision()}
                             style={[styles.button, { borderBottomRightRadius: 10 }]}>
-                            <Text style={styles.text3}>Reject</Text>
+                            <Text style={styles.text3}>Revision</Text>
                         </TouchableOpacity>
                     </View>
                 ) : item.type == 'requestAcceptance' ? (
