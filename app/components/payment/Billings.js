@@ -10,17 +10,52 @@ import {
   Image,
   AsyncStorage,
   NativeModules,
-  Platform,
+  ActivityIndicator,
   Dimensions,
   TouchableOpacity,
   FlatList
 } from 'react-native';
-import { Colors } from '../../style/colors'
+import { PaymentServices } from '../../services';
+import { Colors } from '../../style/colors';
+import Container from '../../common/Container';
 import { FontFamily } from '../../style/typograpy'
-import BillingsCard from './BillingsCard'
+import BillingsCard from './BillingsCard';
+import { connect } from 'react-redux';
 const height = Dimensions.get('window').height
 const BillingsScreen = (props) => {
+  const [billings, setBillings] = useState([]);
+  const [loading, setLoading] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState("")
+  useEffect(() => {
+    getBillings();
+  }, []);
+
+  const getBillings = async () => {
+    setLoading(true)
+    // console.log("booking details are", state.bookingDetails);
+    PaymentServices.getBillings(props?.user?.id, props?.token)
+      .then((response) => {
+        // alert("success");
+        if (response.data.success) {
+          setLoading(false)
+          setBillings(response.data.payments);
+        }
+        else {
+          setMessage(`${response.data.msg}`)
+          setVisible(true);
+          setLoading(false)
+        }
+      })
+      .catch((error) => {
+        setMessage(`${ErrorUtils.getError(error)}`)
+        setVisible(true);
+        setLoading(false)
+      });
+  };
+
   return (
+    <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
     <View style={styles.container}>
       <StatusBar
         barStyle="dark-content"
@@ -28,18 +63,28 @@ const BillingsScreen = (props) => {
         backgroundColor={'transparent'}
       />
       <View style={styles.bottom}>
-    
-        <FlatList
-        data={[1,2,3]}
-        keyExtractor={(item,index) =>index.toString()}
-        renderItem={({item,index})=>{return(
-          <BillingsCard />
-
-        )}}
-        />
+        {
+          loading ?
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <ActivityIndicator size={20} color={'#030E2D'} />
+            </View>
+            :
+            <FlatList
+              data={billings}
+              contentContainerStyle={{paddingBottom:80}}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item, index }) => {
+                return (
+                  <BillingsCard item={item} />
+                )
+              }}
+            />
+        }
       </View>
-      <View style={{height:'10%'}}></View>
+      <View style={{ height:80 }}></View>
     </View>
+    </Container>
+
   );
 };
 
@@ -62,8 +107,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: '15%',
     marginHorizontal: 20,
-    alignItems:"center",
-    justifyContent:'space-between'
+    alignItems: "center",
+    justifyContent: 'space-between'
   },
   text:
   {
@@ -80,8 +125,8 @@ const styles = StyleSheet.create({
   {
     height: 25,
     width: 25,
-    marginRight:10,
-    resizeMode:'contain'
+    marginRight: 10,
+    resizeMode: 'contain'
   },
   text1:
   {
@@ -90,5 +135,9 @@ const styles = StyleSheet.create({
   },
 
 });
+const mapStateToProps = (state) => ({
+  user: state.authReducer.userData,
+  token: state.authReducer.userToken
+});
 
-export default BillingsScreen;
+export default connect(mapStateToProps)(BillingsScreen);
