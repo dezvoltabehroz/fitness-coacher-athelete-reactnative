@@ -74,7 +74,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
             console.log(parsedData)
         }
 
-    }, [2])
+    }, [])
 
     const handleCompeletion = () => {
         let data = {
@@ -133,8 +133,9 @@ const NotificationsCard = ({ item, token, navigation }) => {
                         />
                         <View>
                             <Text style={styles.text}>{item.title}</Text>
-                            {item.type == 'completed_booking' || 'requestCompletion' ? (
-                                <View
+                            {item.type == 'completed_booking' || item.type == 'requestCompletion' || item.type == 'requestAccepted' ? (
+                                <TouchableOpacity
+                                    onPress={() => navigation.navigate('Bookingdetails', { data: parsedObj, flag: item.type == 'requestCompletion' ? true : false })}
                                     style={{
                                         // justifyContent:'',
                                         // backgroundColor: 'pink',
@@ -154,13 +155,13 @@ const NotificationsCard = ({ item, token, navigation }) => {
                                         ]}>
                                         {moment(item.createdAt).fromNow()}
                                     </Text>
-                                </View>
+                                </TouchableOpacity>
                             ) : (
                                 <>
-                                    <TouchableOpacity
-                                        onPress={() => navigation.navigate('Bookingdetails', { data: parsedObj })}>
+                                    <View>
+                                        {/* onPress={() => navigation.navigate('Bookingdetails', { data: parsedObj })}> */}
                                         <Text style={styles.text}>{item.body}</Text>
-                                    </TouchableOpacity>
+                                    </View>
 
                                     <Text
                                         style={[
@@ -178,27 +179,31 @@ const NotificationsCard = ({ item, token, navigation }) => {
                         </View>
                     </View>
                 </View>
-                {item.type == 'completed_booking' || item.type == 'requestCompletion' ? (
-                    <View style={styles.buttonView}>
-                        <TouchableOpacity
-                            style={[styles.button, { borderBottomLeftRadius: 10 }]}
-                            onPress={() => {
-                                console.log(parsedObj.id)
-                                // setModalVisible(!modalVisible)
-                                navigation.navigate('Bookingdetails', { data: parsedObj, flag: true });
-                            }}>
-                            <Text style={styles.text3}>Accept</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleRequestRevision()}
-                            style={[styles.button, { borderBottomRightRadius: 10 }]}>
-                            <Text style={styles.text3}>Revision</Text>
-                        </TouchableOpacity>
-                    </View>
-                ) : item.type == 'requestAcceptance' ? (
-                    <TouchableOpacity style={styles.booking}>
-                        <Text style={styles.text3}>View Profile</Text>
-                    </TouchableOpacity>
-                ) : null}
+                {
+                    item.isRead == 1 ?
+                        null
+                        :
+                        item.type == 'completed_booking' || item.type == 'requestCompletion' ? (
+                            <View style={styles.buttonView}>
+                                <TouchableOpacity
+                                    style={[styles.button, { borderBottomLeftRadius: 10 }]}
+                                    onPress={() => {
+                                        console.log(parsedObj.id)
+                                        // setModalVisible(!modalVisible)
+                                        navigation.navigate('Bookingdetails', { data: parsedObj, flag: true });
+                                    }}>
+                                    <Text style={styles.text3}>Accept</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => navigation.navigate('Bookingdetails', { data: parsedObj, notificationId: item.id, flag: true })}
+                                    style={[styles.button, { borderBottomRightRadius: 10 }]}>
+                                    <Text style={styles.text3}>Revision</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : item.type == 'requestAcceptance' ? (
+                            <TouchableOpacity style={styles.booking}>
+                                <Text style={styles.text3}>View Profile</Text>
+                            </TouchableOpacity>
+                        ) : null}
                 <DetailsModal setVisible={setVisible} message={message} visible={visible} onPress={() => { handleCompeletion() }} setModalVisible={setModalVisible} modalVisible={modalVisible} navigation={navigation} />
             </View>
         </Container>

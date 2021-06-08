@@ -19,52 +19,47 @@ import { Colors } from '../../style/colors'
 import { FontFamily } from '../../style/typograpy'
 import NotificationCard from './NotificationsCard';
 import { connect } from 'react-redux';
+import { throttle } from 'lodash';
 const height = Dimensions.get('window').height
 const NotificationsScreen = (props) => {
   const [loading, setLoading] = useState(true)
+  const [offset, setOffSet] = useState(0)
+  const [reachLoading, setReachLoading] = useState(false)
+  const [data, setdata] = useState([])
+
   useEffect(() => {
     getNotifications();
   }, [])
-  const [data, setdata] = useState([
-    {
-      type: 'completed_booking',
-      message: 'Zimry Mayfield has marked your booking as completed'
-    },
-    {
-      type: 'booking_request',
-      message: 'Zimry Mayfield has responded to your booking request'
-    },
-    {
-      type: 'started_booking',
-      message: 'your booking with Enrique Bara has started'
-    },
-    {
-      type: 'review',
-      message: 'Alex Bold left a 5 star review'
-    },
-    {
-      type: 'review',
-      message: 'Alex Bold left a 5 star review'
-    },
-    {
-      type: 'review',
-      message: 'Alex Bold left a 5 star review'
-    }
-  ])
-
   const getNotifications = () => {
-    NotificationServices.getNotifications(props?.token)
+    NotificationServices.getNotifications(0, props?.token)
       .then((res) => {
         console.log(res.data)
         setdata(res.data.notifications)
         setLoading(false)
+        setOffSet(offset + 10)
+      })
+      .catch((err) => console.log(err))
+  }
+  const getMoreNotifications = () => {
+    setReachLoading(true)
+    NotificationServices.getNotifications(offset, props?.token)
+      .then((res) => {
+        let array = [...data, ...res.data.notifications]
+        if (data.length != array.length) {
+          setdata(array)
+          setOffSet(offset + 10)
+          setReachLoading(false)
+        }
+        else {
+          setReachLoading(false)
+        }
       })
       .catch((err) => console.log(err))
   }
 
 
-  console.log("props?.user : ", props?.token)
-
+  // console.log("props?.user : ", props?.token)
+  // const throttled = () => throttle(getMoreNotifications(), 1000, { leading: true, trailing: false })
   return (
     <View style={styles.container}>
 
@@ -91,6 +86,19 @@ const NotificationsScreen = (props) => {
                     data={data}
                     showsVerticalScrollIndicator={false}
                     keyExtractor={(item, index) => index.toString()}
+                    // onEndReachedThreshold={0.3}
+                    onEndReached={() => {
+                      getMoreNotifications();
+                      // throttled()
+                    }}
+                    // extraData={data}
+                    ListFooterComponent={() => {
+                      if (data?.length > 0 && reachLoading == true) {
+                        return <ActivityIndicator size={'small'} color={'#030E2D'} />
+                      }
+
+                      return <View />
+                    }}
                     renderItem={({ item, index }) => {
                       return (
                         <NotificationCard

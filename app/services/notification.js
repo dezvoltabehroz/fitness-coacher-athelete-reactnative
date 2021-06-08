@@ -11,8 +11,8 @@ let configToken = (token) => {
     }
 }
 const Api = {
-    getNotifications: function (token) {
-        return axiosInstance.get(`athlete/notification`, configToken(token))
+    getNotifications: function (offset,token) {
+        return axiosInstance.get(`athlete/notification?limit=10&offset=${offset}`, configToken(token))
     },
     notificationSetting: function (userData, token) {
         return axiosInstance.post(`user/notificationSetting`, userData, configToken(token))

@@ -180,7 +180,7 @@ const BookingDetails = (props) => {
                                     </TouchableOpacity>
                                     <Text style={styles.headertext}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName} - {bookingDetails?.coach?.uniqueId}</Text>
                                 </View>
-                                <TouchableOpacity onPress={() => setModalVisible(true)}>
+                                <TouchableOpacity disabled={props?.route?.params?.flag==true?false:true} onPress={() => setModalVisible(true)}>
                                     <Image style={styles.headerLeft} source={require('../../assets/menu.png')} />
                                 </TouchableOpacity>
                             </View>
