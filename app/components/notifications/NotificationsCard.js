@@ -180,7 +180,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
                     </View>
                 </View>
                 {
-                    item.isRead != 1 ?
+                    item.isRead == 1 ?
                         null
                         :
                         item.type == 'completed_booking' || item.type == 'requestCompletion' ? (
