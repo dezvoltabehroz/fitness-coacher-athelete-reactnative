@@ -102,7 +102,7 @@ const AthleteDetails = (props) => {
                                 <Text style={styles.text1}>{athleteDetails?.trainingType}</Text>
                             </View>
                             <View style={styles.mainView}>
-                                <Text style={styles.text}>Skill Leve;</Text>
+                                <Text style={styles.text}>Skill Level</Text>
                                 <Text style={styles.text1}>{athleteDetails?.skill}</Text>
                             </View>
                             <View style={styles.mainView}>
