@@ -60,7 +60,7 @@ const ChangePassword = props => {
 
     const checkValidations = () => {
 
-        if (oldPassword && newPassword && confirmNewPassword && confirmNewPassword == newPassword) {
+        if (oldPassword && newPassword && newPassword.length >= 8 && confirmNewPassword.length >= 8 && confirmNewPassword == newPassword) {
             changePassword();
         } else {
             setSubmit(true);

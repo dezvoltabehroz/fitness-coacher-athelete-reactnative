@@ -28,7 +28,7 @@ import { connect } from 'react-redux';
 import moment from 'moment';
 import LinkPreview from 'react-native-link-preview';
 import { errorUtils } from '../../common/Utilities';
-import  Container  from '../../common/Container';
+import Container from '../../common/Container';
 const height = Dimensions.get('window').height
 const BookingDetails = (props) => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -76,7 +76,8 @@ const BookingDetails = (props) => {
                         .then(data => {
                             console.debug("Data : ", data);
                             setPreview(data.images[0])
-                        });
+                        })
+                        .catch((err) => console.log(err))
                     setLoading(false)
                 } else {
                     setMessage(`${response.data.msg}`)
@@ -160,100 +161,100 @@ const BookingDetails = (props) => {
     return (
         <>
             <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
-            {
-                loading ?
-                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                        <ActivityIndicator size={20} color={'#030E2D'} />
-                    </View>
-                    :
-                    <View style={styles.container}>
-                        <StatusBar
-                            barStyle="dark-content"
-                            translucent
-                            backgroundColor={'transparent'}
-                        />
-                        <View style={styles.header}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <TouchableOpacity onPress={() => props.navigation.goBack()}>
-                                    <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
+                {
+                    loading ?
+                        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                            <ActivityIndicator size={20} color={'#030E2D'} />
+                        </View>
+                        :
+                        <View style={styles.container}>
+                            <StatusBar
+                                barStyle="dark-content"
+                                translucent
+                                backgroundColor={'transparent'}
+                            />
+                            <View style={styles.header}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <TouchableOpacity onPress={() => props.navigation.goBack()}>
+                                        <Image style={styles.headerLeft} source={require('../../assets/left-arrow.png')} />
+                                    </TouchableOpacity>
+                                    <Text style={styles.headertext}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName} - {bookingDetails?.coach?.uniqueId}</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => setModalVisible(true)}>
+                                    <Image style={styles.headerLeft} source={require('../../assets/menu.png')} />
                                 </TouchableOpacity>
-                                <Text style={styles.headertext}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName} - {bookingDetails?.coach?.uniqueId}</Text>
                             </View>
-                            <TouchableOpacity onPress={() => setModalVisible(true)}>
-                                <Image style={styles.headerLeft} source={require('../../assets/menu.png')} />
-                            </TouchableOpacity>
-                        </View>
 
-                        <View style={styles.bottom}>
-                            <ScrollView>
+                            <View style={styles.bottom}>
+                                <ScrollView>
 
 
-                                <Tabs tabBarUnderlineStyle={[styles.tabUnderline]} tabContainerStyle={{ elevation: 0, borderTopLeftRadius: 30, borderTopRightRadius: 30, height: 70, borderWidth: 0 }}>
-                                    <Tab heading="Details" tabStyle={[styles.tab, { borderTopLeftRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopLeftRadius: 30 }]}
-                                        textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
-                                        {/* <View style={{ height: 380, backgroundColor: 'red' }}> */}
-                                        <View style={styles.border}>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                                                <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails', { id: bookingDetails?.AthleteId }) }}>
-                                                    <Image source={require('../../assets/splash.png')} style={styles.profile} />
+                                    <Tabs tabBarUnderlineStyle={[styles.tabUnderline]} tabContainerStyle={{ elevation: 0, borderTopLeftRadius: 30, borderTopRightRadius: 30, height: 70, borderWidth: 0 }}>
+                                        <Tab heading="Details" tabStyle={[styles.tab, { borderTopLeftRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopLeftRadius: 30 }]}
+                                            textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
+                                            {/* <View style={{ height: 380, backgroundColor: 'red' }}> */}
+                                            <View style={styles.border}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                                                    <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails', { id: bookingDetails?.AthleteId }) }}>
+                                                        <Image source={require('../../assets/splash.png')} style={styles.profile} />
+                                                    </TouchableOpacity>
+                                                    <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>
+                                                </View>
+                                                <View style={styles.mainView}>
+                                                    <Text style={styles.text1}>Requirements</Text>
+                                                    <Image style={styles.image} source={require('../../assets/down-arrow.png')} />
+                                                    {/* <Text style={styles.text1}>Baseball</Text> */}
+                                                </View>
+                                                <View style={styles.mainView}>
+                                                    <Text style={styles.text}>Sports</Text>
+                                                    <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingType?.title}</Text>
+                                                </View>
+                                                <View style={styles.mainView}>
+                                                    <Text style={styles.text}>Age Group</Text>
+                                                    <Text style={styles.text1}>{bookingDetails?.athleteRequest?.coachAgeGroup}</Text>
+                                                </View>
+                                                <View style={styles.mainView}>
+                                                    <Text style={styles.text}>Instruction type</Text>
+                                                    <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingSubCategory?.title}</Text>
+                                                </View>
+                                                <View style={styles.mainView}>
+                                                    <Text style={styles.text}>Skill type</Text>
+                                                    <Text style={styles.text1}>{bookingDetails?.athleteRequest?.subCategorySkill?.skill}</Text>
+                                                </View>
+                                                <Text style={[styles.text, { marginLeft: 10 }]}>Video</Text>
+                                                <TouchableOpacity onPress={() => setVideoModal(!videoModal)}>
+                                                    <ImageBackground
+                                                        source={{ uri: preview }}
+                                                        style={{ height: 150, width: "95%", marginVertical: "5%", marginHorizontal: "5%", }}
+                                                        imageStyle={{ borderRadius: 20 }}>
+                                                        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                                                            <Icon type={"FontAwesome"} name={"play-circle"} style={{ fontSize: 40, color: "lightgray", }} />
+                                                        </View>
+                                                    </ImageBackground>
                                                 </TouchableOpacity>
-                                                <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>
+                                                {/* </View> */}
+                                            </View>
+                                        </Tab>
+                                        <Tab heading="Contact Information" tabStyle={[styles.tab, { borderTopRightRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopRightRadius: 30 }]}
+                                            textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
+                                            <View style={[styles.mainView, { marginTop: 10 }]}>
+                                                <Text style={styles.text}>Mobile Phone</Text>
+                                                <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
                                             </View>
                                             <View style={styles.mainView}>
-                                                <Text style={styles.text1}>Requirements</Text>
-                                                <Image style={styles.image} source={require('../../assets/down-arrow.png')} />
-                                                {/* <Text style={styles.text1}>Baseball</Text> */}
+                                                <Text style={styles.text}>Email</Text>
+                                                <Text style={styles.text1}>{bookingDetails?.coach?.email}</Text>
                                             </View>
                                             <View style={styles.mainView}>
-                                                <Text style={styles.text}>Sports</Text>
-                                                <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingType?.title}</Text>
+                                                <Text style={styles.text}>Whatsapp</Text>
+                                                <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
                                             </View>
-                                            <View style={styles.mainView}>
-                                                <Text style={styles.text}>Age Group</Text>
-                                                <Text style={styles.text1}>{bookingDetails?.athleteRequest?.coachAgeGroup}</Text>
-                                            </View>
-                                            <View style={styles.mainView}>
-                                                <Text style={styles.text}>Instruction type</Text>
-                                                <Text style={styles.text1}>{bookingDetails?.athleteRequest?.trainingSubCategory?.title}</Text>
-                                            </View>
-                                            <View style={styles.mainView}>
-                                                <Text style={styles.text}>Skill type</Text>
-                                                <Text style={styles.text1}>{bookingDetails?.athleteRequest?.subCategorySkill?.skill}</Text>
-                                            </View>
-                                            <Text style={[styles.text, { marginLeft: 10 }]}>Video</Text>
-                                            <TouchableOpacity onPress={() => setVideoModal(!videoModal)}>
-                                                <ImageBackground
-                                                    source={{ uri: preview }}
-                                                    style={{ height: 150, width: "95%", marginVertical: "5%", marginHorizontal: "5%", }}
-                                                    imageStyle={{ borderRadius: 20 }}>
-                                                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                                                        <Icon type={"FontAwesome"} name={"play-circle"} style={{ fontSize: 40, color: "lightgray", }} />
-                                                    </View>
-                                                </ImageBackground>
-                                            </TouchableOpacity>
-                                            {/* </View> */}
-                                        </View>
-                                    </Tab>
-                                    <Tab heading="Contact Information" tabStyle={[styles.tab, { borderTopRightRadius: 30 }]} activeTabStyle={[styles.activeTab, { borderTopRightRadius: 30 }]}
-                                        textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
-                                        <View style={[styles.mainView, { marginTop: 10 }]}>
-                                            <Text style={styles.text}>Mobile Phone</Text>
-                                            <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
-                                        </View>
-                                        <View style={styles.mainView}>
-                                            <Text style={styles.text}>Email</Text>
-                                            <Text style={styles.text1}>{bookingDetails?.coach?.email}</Text>
-                                        </View>
-                                        <View style={styles.mainView}>
-                                            <Text style={styles.text}>Whatsapp</Text>
-                                            <Text style={styles.text1}>{bookingDetails?.coach?.phone}</Text>
-                                        </View>
-                                    </Tab>
-                                </Tabs>
-                            </ScrollView>
-                        </View>
+                                        </Tab>
+                                    </Tabs>
+                                </ScrollView>
+                            </View>
 
-                    </View>}
+                        </View>}
             </Container>
             <Modal visible={videoModal}>
                 <VideoPlayer
