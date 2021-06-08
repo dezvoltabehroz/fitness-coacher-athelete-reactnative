@@ -124,6 +124,19 @@ function NotificationsStack() {
           fontSize: 16,
         }
       }} />
+         <Stack.Screen
+        name="AthleteDetails"
+        component={AthleteDetails}
+        options={{
+          headerShown: null,
+          headerTitleAllowFontScaling: true,
+          headerTransparent: true,
+          headerTitleStyle: {
+            fontFamily: FontFamily.helveticaBold,
+            fontSize: 16,
+          },
+        }}
+      />
 
     </Stack.Navigator>
   )

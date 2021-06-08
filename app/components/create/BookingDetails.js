@@ -195,7 +195,7 @@ const BookingDetails = (props) => {
                                             {/* <View style={{ height: 380, backgroundColor: 'red' }}> */}
                                             <View style={styles.border}>
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                                                    <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails', { id: bookingDetails?.AthleteId }) }}>
+                                                    <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails', { id: bookingDetails?.CoachId }) }}>
                                                         <Image source={require('../../assets/splash.png')} style={styles.profile} />
                                                     </TouchableOpacity>
                                                     <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>

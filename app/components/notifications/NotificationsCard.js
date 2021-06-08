@@ -148,7 +148,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
                                             styles.text,
                                             {
                                                 fontSize: 11,
-                                                lineHeight: height > 667 ? 10 : 12,
+                                                // lineHeight: height > 667 ? 10 : 12,
                                                 color: Colors.textColor,
                                             },
                                         ]}>
@@ -167,7 +167,7 @@ const NotificationsCard = ({ item, token, navigation }) => {
                                             styles.text,
                                             {
                                                 fontSize: 11,
-                                                lineHeight: height > 667 ? 10 : 12,
+                                                // lineHeight: height > 667 ? 12 : 14,
                                                 color: Colors.textColor,
                                             },
                                         ]}>
