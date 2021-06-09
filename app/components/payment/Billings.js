@@ -21,6 +21,7 @@ import Container from '../../common/Container';
 import { FontFamily } from '../../style/typograpy'
 import BillingsCard from './BillingsCard';
 import { connect } from 'react-redux';
+import { errorUtils } from '../../common/Utilities';
 const height = Dimensions.get('window').height
 const BillingsScreen = (props) => {
   const [billings, setBillings] = useState([]);
@@ -48,7 +49,7 @@ const BillingsScreen = (props) => {
         }
       })
       .catch((error) => {
-        setMessage(`${ErrorUtils.getError(error)}`)
+        setMessage(`${errorUtils.getError(error)}`)
         setVisible(true);
         setLoading(false)
       });
