@@ -29,6 +29,8 @@ const height = Dimensions.get('window').height
 const width = Dimensions.get('window').width
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
+import { Buffer } from 'buffer';
+import Container from '../../common/Container';
 function CreateBooking(props) {
   useEffect(() => {
     getCategories();
@@ -60,6 +62,8 @@ function CreateBooking(props) {
   const [instructor, setInstructor] = useState({});
   const [skill, setSkill] = useState({});
   const [preview, setPreview] = useState("");
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState("");
   const [instruction, setInstruction] = useState({});
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
@@ -215,235 +219,242 @@ function CreateBooking(props) {
 
     launchImageLibrary(
       {
+        includeBase64: true,
         title: "Pick video from storage",
         mediaType: 'video',
-        path: 'video',
-        includeBase64: true,
+        path: 'videos',
         compressImageQuality: 0.1,
       },
       async (response) => {
         if (response.error) { }
         else if (response.uri != undefined) {
+          console.log(response)
           setVideo(response.uri);
+          let type=response.fileName.split('.')
+          console.log(type)
           let userData = {
-            fileName: new Date().getTime() + '_video_' + props.user.id + ".mp4",
-            fileType: 'video/mp4'
+            fileName: response.fileName,
+            fileType: type[1]
           }
           console.log("response : ", response);
           setUpLoading(true);
           AuthServices.getUrl(userData)
             .then((res) => {
               console.log(res.data)
-              let formData = new FormData();
-              formData.append(`${userData.fileName}`, {
-                uri: Platform.OS === 'ios' ? response.uri.replace('file:///', '') : response.uri.replace('file://', ''),
-                name: `${new Date().getTime().toString()}.mp4`,
-                filename: new Date().getTime().toString() + '.mp4',
-                type: 'video/mp4'
-              })
-              axios.put(res.data.postUrl, formData)
-                .then(async (responseData) => {
-                  // await LinkPreview.getPreview(res.data.getUrl)
-                  //   .then(data => {
 
-                  //     console.debug("Data : ", data);
-                  //     setPreview(data.images[0])
-                  //   });
-                  console.log(responseData)
+              const buffer = Buffer(`${response.uri}`, "base64");
+              axios.put(res.data.postUrl, buffer, {
+                headers: {
+                  "Content-Type": `${type[1]}; charset=utf-8`,
+                  "x-amz-acl": "public-read",
+                },
+              })
+                .then(async (responseData) => {
+                  await LinkPreview.getPreview(res.data.getUrl)
+                    .then(data => {
+                      console.debug("Data : ", data);
+                      setPreview(data.images[0])
+                    })
+                    .catch((err) => console.log(err))
+                  console.log(responseData.data.status)
                   setUpLoading(false)
                   setVideo(res.data.getUrl);
                   setPreview(res.data.getUrl)
                 }).catch((err) => { console.log(err); setUpLoading(false) })
             })
-            .catch((err) => { console.log(err) })
+            .catch((err) => { console.log(err.response.data); setUpLoading(false) })
 
         }
       })
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        translucent
-        backgroundColor={'transparent'}
-      />
+    <Container message={message} visible={visible} onPress={()=>setVisible(!visible)} >
 
-      <ScrollView style={styles.bottom}>
-        {
-          loading ?
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <ActivityIndicator size={20} color={'#030E2D'} />
-            </View>
-            :
-            <>
-              <Text style={styles.text}>Instructor Types</Text>
-              <FlatList
-                data={categories}
-                contentContainerStyle={styles.contentContainerStyle}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => {
-                  return (
-                    <View style={styles.outerView}>
-                      <TouchableOpacity onPress={() => selectingTrainingType(index)} style={[styles.innerView1]}>
-                        <MaterialIcons
-                          size={20}
-                          name={item.selected ? "check-box" : "check-box-outline-blank"} />
-                        <Text style={styles.innertext}>{item.title}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  );
-                }}
-              />
-              {/* </View> */}
-              {submit && !cat && (
-                <Text style={styles.errorStyle}> Please select instructor type</Text>
-              )}
 
-              <Text style={styles.text}>Instruction Types</Text>
-              <View style={styles.outerView}>
+      <View style={styles.container}>
+        <StatusBar
+          barStyle="dark-content"
+          translucent
+          backgroundColor={'transparent'}
+        />
+
+        <ScrollView style={styles.bottom}>
+          {
+            loading ?
+              <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size={20} color={'#030E2D'} />
+              </View>
+              :
+              <>
+                <Text style={styles.text}>Instructor Types</Text>
+                <FlatList
+                  data={categories}
+                  contentContainerStyle={styles.contentContainerStyle}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <View style={styles.outerView}>
+                        <TouchableOpacity onPress={() => selectingTrainingType(index)} style={[styles.innerView1]}>
+                          <MaterialIcons
+                            size={20}
+                            name={item.selected ? "check-box" : "check-box-outline-blank"} />
+                          <Text style={styles.innertext}>{item.title}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  }}
+                />
+                {/* </View> */}
+                {submit && !cat && (
+                  <Text style={styles.errorStyle}> Please select instructor type</Text>
+                )}
+
+                <Text style={styles.text}>Instruction Types</Text>
+                <View style={styles.outerView}>
+                  {
+                    categoriesLoading ?
+                      <View style={{ justifyContent: "center", alignItems: "center" }}>
+                        <ActivityIndicator size={20} color={'#030E2D'} />
+                      </View>
+                      :
+                      <FlatList
+                        data={subCategories}
+                        contentContainerStyle={styles.contentContainerStyle}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item, index }) => {
+                          return (
+                            <View style={styles.outerView}>
+                              <TouchableOpacity onPress={() => checkBoxFunc(index)} style={[styles.innerView1]}>
+                                <MaterialIcons
+                                  size={20}
+                                  name={item.selected ? "check-box" : "check-box-outline-blank"} />
+                                <Text style={styles.innertext}>{item.title}</Text>
+                              </TouchableOpacity>
+                            </View>
+                          );
+                        }}
+                      />}
+                </View>
+                {submit && !subCatVal && (
+                  <Text style={styles.errorStyle}>
+                    Please select aleast one instruction type
+                  </Text>
+                )}
+                <Text style={[styles.text, { marginTop: 5 }]}>Skill Level</Text>
+
+                <FlatList
+                  data={coachSkills}
+                  contentContainerStyle={styles.contentContainerStyle}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <View style={styles.outerView}>
+                        <TouchableOpacity onPress={() => selectingSkills(index)} style={[styles.innerView1]}>
+                          <MaterialIcons
+                            size={20}
+                            name={item.selected ? "check-box" : "check-box-outline-blank"} />
+                          <Text style={styles.innertext}>{item.skill}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  }}
+                />
+                {submit && !skillVal && (
+                  <Text style={styles.errorStyle}>
+                    Please select atleast one skill level
+                  </Text>
+                )}
+
+                <Text style={[styles.text, { marginTop: 5 }]}>Coach Age Group</Text>
+
+                <FlatList
+                  data={arr}
+                  contentContainerStyle={styles.contentContainerStyle}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <View style={styles.outerView}>
+                        <TouchableOpacity onPress={() => {
+                          let array = arr;
+                          array[prev].flag = false;
+                          array[index].flag = true;
+                          setArr(arr);
+                          // ageArr.push({ ageGroup: item.age })
+                          // setAge(ageArr)
+                          setAge(item.age);
+                          setPrev(index);
+                        }} style={[styles.innerView1]}>
+                          <MaterialIcons
+                            size={20}
+                            name={item.flag && age == item.age ? "check-box" : "check-box-outline-blank"} />
+                          <Text style={styles.innertext}>{item.age}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  }}
+                />
+                {submit && !age && (
+                  <Text style={styles.errorStyle}>
+                    Please select age group
+                  </Text>
+                )}
                 {
-                  categoriesLoading ?
+                  uploading ?
                     <View style={{ justifyContent: "center", alignItems: "center" }}>
+                      <Text style={styles.imageText}>Uploading Video</Text>
                       <ActivityIndicator size={20} color={'#030E2D'} />
                     </View>
                     :
-                    <FlatList
-                      data={subCategories}
-                      contentContainerStyle={styles.contentContainerStyle}
-                      keyExtractor={(item, index) => index.toString()}
-                      renderItem={({ item, index }) => {
-                        return (
-                          <View style={styles.outerView}>
-                            <TouchableOpacity onPress={() => checkBoxFunc(index)} style={[styles.innerView1]}>
-                              <MaterialIcons
-                                size={20}
-                                name={item.selected ? "check-box" : "check-box-outline-blank"} />
-                              <Text style={styles.innertext}>{item.title}</Text>
-                            </TouchableOpacity>
+                    video ?
+                      <TouchableOpacity onPress={() => setVideoModal(!videoModal)}>
+                        <ImageBackground
+                          source={{ uri: preview }}
+                          style={{ height: 150, width: "95%", marginVertical: "5%", marginHorizontal: "5%", }}
+                          imageStyle={{ borderRadius: 20 }}>
+                          <View style={{ flex: 1, }}>
+                            <Icon type={"AntDesign"} onPress={() => { setVideo(""); setPreview("") }} name={"closecircle"} style={{ fontSize: 20, alignItems: "flex-end", color: "black", }} />
+                            <View style={{ justifyContent: "center", alignItems: "center" }}>
+                              <Icon type={"FontAwesome"} name={"play-circle"} style={{ fontSize: 40, color: "lightgray", }} />
+                            </View>
                           </View>
-                        );
-                      }}
-                    />}
-              </View>
-              {submit && !subCatVal && (
-                <Text style={styles.errorStyle}>
-                  Please select aleast one instruction type
-                </Text>
-              )}
-              <Text style={[styles.text, { marginTop: 5 }]}>Skill Level</Text>
 
-              <FlatList
-                data={coachSkills}
-                contentContainerStyle={styles.contentContainerStyle}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => {
-                  return (
-                    <View style={styles.outerView}>
-                      <TouchableOpacity onPress={() => selectingSkills(index)} style={[styles.innerView1]}>
-                        <MaterialIcons
-                          size={20}
-                          name={item.selected ? "check-box" : "check-box-outline-blank"} />
-                        <Text style={styles.innertext}>{item.skill}</Text>
+                        </ImageBackground>
                       </TouchableOpacity>
-                    </View>
-                  );
-                }}
-              />
-              {submit && !skillVal && (
-                <Text style={styles.errorStyle}>
-                  Please select atleast one skill level
-                </Text>
-              )}
-
-              <Text style={[styles.text, { marginTop: 5 }]}>Coach Age Group</Text>
-
-              <FlatList
-                data={arr}
-                contentContainerStyle={styles.contentContainerStyle}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => {
-                  return (
-                    <View style={styles.outerView}>
-                      <TouchableOpacity onPress={() => {
-                        let array = arr;
-                        array[prev].flag = false;
-                        array[index].flag = true;
-                        setArr(arr);
-                        // ageArr.push({ ageGroup: item.age })
-                        // setAge(ageArr)
-                        setAge(item.age);
-                        setPrev(index);
-                      }} style={[styles.innerView1]}>
-                        <MaterialIcons
-                          size={20}
-                          name={item.flag && age == item.age ? "check-box" : "check-box-outline-blank"} />
-                        <Text style={styles.innertext}>{item.age}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  );
-                }}
-              />
-              {submit && !age && (
-                <Text style={styles.errorStyle}>
-                  Please select age group
-                </Text>
-              )}
-              {
-                uploading ?
-                  <View style={{ justifyContent: "center", alignItems: "center" }}>
-                    <Text style={styles.imageText}>Uploading Video</Text>
-                    <ActivityIndicator size={20} color={'#030E2D'} />
-                  </View>
-                  :
-                  video ?
-                    <TouchableOpacity onPress={() => setVideoModal(!videoModal)}>
-                      <ImageBackground
-                        source={{ uri: preview }}
-                        style={{ height: 150, width: "95%", marginVertical: "5%", marginHorizontal: "5%", }}
-                        imageStyle={{ borderRadius: 20 }}>
-                        <View style={{ flex: 1, }}>
-                          <Icon type={"AntDesign"} onPress={() => { setVideo(""); setPreview("") }} name={"closecircle"} style={{ fontSize: 20, alignItems: "flex-end", color: "black", }} />
-                          <View style={{ justifyContent: "center", alignItems: "center" }}>
-                            <Icon type={"FontAwesome"} name={"play-circle"} style={{ fontSize: 40, color: "lightgray", }} />
-                          </View>
+                      :
+                      <TouchableOpacity onPress={() => { launchGallery() }} style={styles.imageOuter}>
+                        <View style={styles.profileView}>
+                          <Image source={require('../../assets/avatar.png')} style={styles.image} />
+                          <Image source={require('../../assets/video.png')} style={[styles.image, { position: 'absolute', left: 40, top: 35 }]} />
                         </View>
-
-                      </ImageBackground>
-                    </TouchableOpacity>
-                    :
-                    <TouchableOpacity onPress={() => { launchGallery() }} style={styles.imageOuter}>
-                      <View style={styles.profileView}>
-                        <Image source={require('../../assets/avatar.png')} style={styles.image} />
-                        <Image source={require('../../assets/video.png')} style={[styles.image, { position: 'absolute', left: 40, top: 35 }]} />
-                      </View>
-                      <Text style={styles.imageText}>Upload Video/Image</Text>
-                    </TouchableOpacity>
-              }
-              {submit && !video && (
-                <Text style={styles.errorStyle}>
-                  Please select a video
-                </Text>
-              )}
-              <Text style={[styles.text, { marginTop: 15 }]}>Notes</Text>
-              <TextInput value={note} style={styles.input} onChangeText={(val) => setNotes(val)} />
-              {submit && !note && (
-                <Text style={styles.errorStyle}>
-                  Please add detail note
-                </Text>
-              )}
-              <Button disabled={uploading} text={'Create Booking Request'} onPress={() => handlePreview()} />
-              <View style={{ height: 50 }}></View>
-            </>}
-      </ScrollView>
-      <Modal visible={videoModal}>
-        <VideoPlayer
-          source={{ uri: video }}
-          onBack={() => setVideoModal(!videoModal)}
-        />
-      </Modal>
-      <AgeGroupModal modalVisible={modalVisible} setModalVisible={setmodalVisible} setAge={setAge} />
-    </View>
+                        <Text style={styles.imageText}>Upload Video/Image</Text>
+                      </TouchableOpacity>
+                }
+                {submit && !video && (
+                  <Text style={styles.errorStyle}>
+                    Please select a video
+                  </Text>
+                )}
+                <Text style={[styles.text, { marginTop: 15 }]}>Notes</Text>
+                <TextInput value={note} style={styles.input} onChangeText={(val) => setNotes(val)} />
+                {submit && !note && (
+                  <Text style={styles.errorStyle}>
+                    Please add detail note
+                  </Text>
+                )}
+                <Button disabled={uploading} text={'Create Booking Request'} onPress={() => handlePreview()} />
+                <View style={{ height: 50 }}></View>
+              </>}
+        </ScrollView>
+        <Modal visible={videoModal}>
+          <VideoPlayer
+            source={{ uri: video }}
+            onBack={() => setVideoModal(!videoModal)}
+          />
+        </Modal>
+        <AgeGroupModal modalVisible={modalVisible} setModalVisible={setmodalVisible} setAge={setAge} />
+      </View>
+    </Container>
   );
 };
 

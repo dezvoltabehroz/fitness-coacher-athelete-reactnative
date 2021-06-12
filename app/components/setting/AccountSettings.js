@@ -13,7 +13,7 @@ import {
   Platform,
   Dimensions,
   TouchableOpacity,
-  ToastAndroid
+  ActivityIndicator
 } from 'react-native';
 import AccountInput from '../../common/AccountInput'
 import AccountModal from '../../common/AccountModal';
@@ -32,11 +32,12 @@ import { connect } from 'react-redux';
 import { authActions } from '../../redux/actions/auth';
 import { bindActionCreators } from "redux";
 import { launchImageLibrary } from 'react-native-image-picker';
-import { Snackbar } from 'react-native-paper';
+import { Buffer } from 'buffer';
 import Calendar from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { errorUtils } from '../../common/Utilities';
 import Container from '../../common/Container';
+import axios from 'axios';
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
 const AccountSettingsScreen = (props) => {
@@ -57,6 +58,7 @@ const AccountSettingsScreen = (props) => {
   const phoneRef = React.createRef(null);
   const [visible, setVisible] = useState(false)
   const [message, setMessage] = useState("")
+  const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [arr, setArr] = useState([
     {
@@ -181,7 +183,7 @@ const AccountSettingsScreen = (props) => {
       dob: moment(date).format('YYYY-MM-DD'),
       role: 'athlete',
       country: country,
-      imageUrl:image,
+      imageUrl: image,
       ageGroup: ageGroup,
     };
     console.log("userdata is", userData);
@@ -213,6 +215,7 @@ const AccountSettingsScreen = (props) => {
   const launchGallery = () => {
     launchImageLibrary(
       {
+        includeBase64: true,
         title: "Pick photo from storage",
         storageOptions: {
           skipBackup: true,
@@ -222,30 +225,29 @@ const AccountSettingsScreen = (props) => {
       async (response) => {
         if (response.error) { }
         else if (response.uri != undefined) {
-          setImage(response.uri);
           let userData = {
-            fileName: new Date().getTime() + response.fileName,
+            fileName: response.fileName,
             fileType: response.type
           }
-          console.log("response : ", response);
+          setImage(response.uri);
+          setUploading(true)
           AuthServices.getUrl(userData)
             .then((res) => {
-              console.log(res.data)
-              let formData = new FormData();
-              formData.append(`${userData.fileName}`, {
-                uri: response.uri,
-                name: `${new Date().getTime().toString()}.jpg`,
-                filename:`${new Date().getTime().toString()}.jpg`,
-                type: 'image/jpg'
+              const buffer = Buffer(`${response.base64}`, "base64");
+              axios.put(res.data.postUrl, buffer, {
+                headers: {
+                  "Content-Type": `${response.type}; charset=utf-8`,
+                  "x-amz-acl": "public-read",
+                },
               })
-              axios.put(res.data.postUrl, formData)
                 .then((responseData) => {
-                  console.log(responseData)
+                  console.log(responseData.data.status)
                   setImage(res.data.getUrl);
+                  setUploading(false)
                 }).catch((err) => { console.log(err) })
             })
             .catch((err) => { console.log(err) })
-         
+
         }
       })
   }
@@ -260,10 +262,14 @@ const AccountSettingsScreen = (props) => {
         />
         <ScrollView style={styles.bottom}>
           <View>{
-            image ?
-              <Image source={{ uri: image }} style={styles.image} />
-              :
-              <Image source={require('../../assets/splash.png')} style={styles.image} />}
+            uploading ?
+              <ImageBackground imageStyle={{ borderRadius: 150 }} source={{ uri: image }} style={styles.image}>
+                <ActivityIndicator size={20} color={Colors.buttonColor} />
+              </ImageBackground>
+              : image ?
+                <Image source={{ uri: image }} style={styles.image} />
+                :
+                <Image source={require('../../assets/splash.png')} style={styles.image} />}
             <TouchableOpacity onPress={() => launchGallery()} style={styles.imageView}>
               <Image source={require('../../assets/pen.png')} style={styles.pen} />
             </TouchableOpacity>
@@ -402,7 +408,7 @@ const AccountSettingsScreen = (props) => {
           {submit == true && ageGroup == "" && (
             <Text style={styles.errorStyle}>  Please select age group</Text>
           )}
-          <Button loading={loading} text={'Update'} onPress={async () => { await checkNetwork() }} />
+          <Button disabled={uploading} loading={loading} text={'Update'} onPress={async () => { await checkNetwork() }} />
           <View style={{ marginTop: 20 }}></View>
         </ScrollView>
         <CountryPicker
@@ -416,7 +422,7 @@ const AccountSettingsScreen = (props) => {
         >
           <View />
         </CountryPicker>
-       
+
         <AccountModal modalVisible={modalVisible} setModalVisible={setModalVisible} />
       </View>
     </Container>
@@ -443,7 +449,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginBottom: "5%",
-    width: width,
+    width: width * 0.8,
   },
   profile:
   {
@@ -602,6 +608,8 @@ const styles = StyleSheet.create({
     width: 100,
     borderRadius: 150,
     alignSelf: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 20
   },
   imageView:

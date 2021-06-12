@@ -100,7 +100,7 @@ const BookingScreen = (props) => {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => { props.navigation.navigate("AccountSettings") }}>
               <Image source={props?.user?.imageUrl != null ? { uri: props?.user?.imageUrl } : require('../../assets/splash.png')}
-                resizeMode="contain" style={styles.image} />
+                style={styles.image} />
             </TouchableOpacity>
 
           </View>

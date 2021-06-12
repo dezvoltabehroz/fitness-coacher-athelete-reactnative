@@ -9,7 +9,7 @@ import {
   StatusBar,
   ImageBackground,
   Image,
-  NativeModules,
+  ActivityIndicator,
   Platform,
   Dimensions
 } from 'react-native';
@@ -41,7 +41,7 @@ const SplashScreen = (props) => {
             requestUserPermission(userData)
             // await props.authActions.getUserProfile(userData, props.navigation.replace);
           })
-          .catch(async(err) => { props.authActions.removeUser(props.navigation.replace); console.log(err) })
+          .catch(async (err) => { props.authActions.removeUser(props.navigation.replace); console.log(err) })
       } else {
         props.authActions.removeUser(props.navigation.replace);
       }
@@ -94,17 +94,17 @@ const SplashScreen = (props) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar
+      <ImageBackground
+        source={require('../../assets/splash.png')}
+        style={styles.image}>
+           <StatusBar
         barStyle="dark-content"
         translucent
         backgroundColor={'transparent'}
       />
-      <ImageBackground
-        source={require('../../assets/splash.png')}
-        style={styles.image}>
-        {/* <View style={{ flex: .5, alignItems: 'center', justifyContent: 'center' }}>
-          <Image source={require('../../assets/logo.png')} style={styles.logo} />
-        </View> */}
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color={'white'} size="large" />
+        </View>
         {/* <View style={{ flex: .5, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={styles.text}>Athlete</Text>
         </View> */}
@@ -116,6 +116,7 @@ const SplashScreen = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor:Colors.buttonColor
   },
   image: {
     width: '100%',

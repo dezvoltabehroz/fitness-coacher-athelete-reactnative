@@ -12,7 +12,8 @@ import {
   NativeModules,
   Platform,
   Dimensions,
-  FlatList
+  FlatList,
+  RefreshControl
 } from 'react-native';
 import { NotificationServices } from '../../services';
 import { Colors } from '../../style/colors'
@@ -26,7 +27,9 @@ const NotificationsScreen = (props) => {
   const [offset, setOffSet] = useState(0)
   const [reachLoading, setReachLoading] = useState(false)
   const [data, setdata] = useState([])
-
+  const [dataArr, setArray] = useState([]);
+  const [scrolled, setScrolled] = useState(false)
+  let onEndReachedCalledDuringMomentum = true;
   useEffect(() => {
     getNotifications();
   }, [])
@@ -37,29 +40,37 @@ const NotificationsScreen = (props) => {
         setdata(res.data.notifications)
         setLoading(false)
         setOffSet(offset + 10)
-      })
-      .catch((err) => console.log(err))
-  }
-  const getMoreNotifications = () => {
-    setReachLoading(true)
-    NotificationServices.getNotifications(offset, props?.token)
-      .then((res) => {
-        let array = [...data, ...res.data.notifications]
-        if (data.length != array.length) {
-          setdata(array)
-          setOffSet(offset + 10)
-          setReachLoading(false)
-        }
-        else {
-          setReachLoading(false)
-        }
+        getMoreNotifications()
       })
       .catch((err) => console.log(err))
   }
 
+  const getMoreNotifications = () => {
+
+    if (!scrolled) {
+      return null;
+    }
+    else {
+      setReachLoading(true)
+      NotificationServices.getNotifications(offset, props?.token)
+        .then((res) => {
+          let array = [...data, ...res.data.notifications]
+          setOffSet(offset + 10)
+          setdata(array)
+          setReachLoading(false)
+          setScrolled(false)
+        })
+        .catch((err) => console.log(err))
+    }
+
+  }
+
+  const _scrolled = () => {
+    setScrolled(true)
+  }
 
   // console.log("props?.user : ", props?.token)
-  // const throttled = () => throttle(getMoreNotifications(), 1000, { leading: true, trailing: false })
+  let throttled = () => throttle(getMoreNotifications, 1000, { leading: true, trailing: false })
   return (
     <View style={styles.container}>
 
@@ -69,7 +80,7 @@ const NotificationsScreen = (props) => {
           translucent
           backgroundColor={'transparent'}
         />
-        <ScrollView style={styles.bottom}>
+        <View style={styles.bottom}>
           {
             loading ?
               <View style={{ flex: 1, marginTop: "50%", justifyContent: "center", alignItems: "center" }}>
@@ -84,20 +95,20 @@ const NotificationsScreen = (props) => {
                   :
                   <FlatList
                     data={data}
+                    contentContainerStyle={{ }}
                     showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={loading} onRefresh={() => getNotifications()} />}
                     keyExtractor={(item, index) => index.toString()}
-                    // onEndReachedThreshold={0.3}
-                    onEndReached={() => {
-                      getMoreNotifications();
-                      // throttled()
-                    }}
-                    // extraData={data}
+                    onEndReached={() => getMoreNotifications()}
+                    onEndReachedThreshold={0.5}
+                    onScrollBeginDrag={() => _scrolled()}
+                    onMomentumScrollBegin={() => onEndReachedCalledDuringMomentum = false}
                     ListFooterComponent={() => {
                       if (data?.length > 0 && reachLoading == true) {
                         return <ActivityIndicator size={'small'} color={'#030E2D'} />
                       }
 
-                      return <View />
+                      return null
                     }}
                     renderItem={({ item, index }) => {
                       return (
@@ -114,7 +125,7 @@ const NotificationsScreen = (props) => {
               </>
           }
           <View style={{ height: 20 }}></View>
-        </ScrollView>
+        </View>
       </>
     </View>
   );
@@ -127,12 +138,14 @@ const styles = StyleSheet.create({
   bottom:
   {
     width: '100%',
+    height: '90%',
     backgroundColor: Colors.whiteColor,
     borderTopRightRadius: 35,
     borderTopLeftRadius: 35,
     marginTop: '22%',
     paddingHorizontal: 20,
-    paddingTop: 10
+    paddingTop: 10,
+    // paddingBottom: "10%"
   },
 
 });

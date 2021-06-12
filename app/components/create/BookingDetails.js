@@ -204,12 +204,12 @@ const BookingDetails = (props) => {
                                             textStyle={styles.tabText} activeTextStyle={styles.activeTabText} >
                                             {/* <View style={{ height: 380, backgroundColor: 'red' }}> */}
                                             <View style={styles.border}>
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                                                    <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails', { id: bookingDetails?.CoachId }) }}>
+                                                <TouchableOpacity onPress={() => { props.navigation.navigate('AthleteDetails', { id: bookingDetails?.CoachId }) }} style={{ flexDirection: 'row', alignItems: 'center', }}>
+                                                    <View >
                                                         <Image source={require('../../assets/splash.png')} style={styles.profile} />
-                                                    </TouchableOpacity>
+                                                    </View>
                                                     <Text style={styles.text1}>{bookingDetails?.coach?.firstName} {bookingDetails?.coach?.lastName}</Text>
-                                                </View>
+                                                </TouchableOpacity>
                                                 <View style={styles.mainView}>
                                                     <Text style={styles.text1}>Requirements</Text>
                                                     <Image style={styles.image} source={require('../../assets/down-arrow.png')} />
