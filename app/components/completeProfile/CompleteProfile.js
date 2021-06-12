@@ -9,7 +9,7 @@ import {
     ImageBackground,
     Image,
     TouchableOpacity,
-    NativeModules,
+    ActivityIndicator,
     Platform,
     Dimensions,
     FlatList,
@@ -34,6 +34,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Container from '../../common/Container';
 import { errorUtils } from '../../common/Utilities';
 import axios from 'axios';
+import { Buffer } from 'buffer';
 const height = Dimensions.get('window').height
 const width = Dimensions.get('window').width
 const CompleteProfile = ({ navigation, route }) => {
@@ -44,6 +45,7 @@ const CompleteProfile = ({ navigation, route }) => {
     const [ageGroup, setAgeGroup] = useState('')
     const [modalVisible, setModalVisible] = useState(false)
     const [date, setDate] = useState("")
+    const [uploading, setUploading] = useState(false)
     const [showDatePicker, setShowDatePicker] = useState(false)
     const [countryModal, setCountryModal] = useState(false);
     const [country, setCountry] = useState("")
@@ -122,9 +124,6 @@ const CompleteProfile = ({ navigation, route }) => {
         hideDatePicker();
     };
 
-    // useEffect(() => {
-    //     setInterval(forceRender({}), 100);
-    // }, []);
 
     const checkNetwork = async () => {
         await setLoading(true)
@@ -200,6 +199,7 @@ const CompleteProfile = ({ navigation, route }) => {
     const launchGallery = () => {
         launchImageLibrary(
             {
+                includeBase64:true,
                 title: "Pick photo from storage",
                 storageOptions: {
                     skipBackup: true,
@@ -209,26 +209,25 @@ const CompleteProfile = ({ navigation, route }) => {
             async (response) => {
                 if (response.error) { }
                 else if (response.uri != undefined) {
-                    setImage(response.uri);
                     let userData = {
-                        fileName: new Date().getTime() + response.fileName,
+                        fileName: response.fileName,
                         fileType: response.type
                     }
-                    console.log("response : ", response);
+                    setImage(response.uri);
+                    setUploading(true)
                     AuthServices.getUrl(userData)
                         .then((res) => {
-                            console.log(res.data)
-                            let formData = new FormData();
-                            formData.append(`${userData.fileName}`, {
-                                uri: response.uri,
-                                name: `${new Date().getTime().toString()}.jpg`,
-                                filename: `${new Date().getTime().toString()}.jpg`,
-                                type: 'image/jpg'
+                            const buffer = Buffer(`${response.base64}`, "base64");
+                            axios.put(res.data.postUrl, buffer, {
+                                headers: {
+                                    "Content-Type": `${response.type}; charset=utf-8`,
+                                    "x-amz-acl": "public-read",
+                                },
                             })
-                            axios.put(res.data.postUrl, formData)
                                 .then((responseData) => {
-                                    console.log(responseData)
+                                    console.log(responseData.data.status)
                                     setImage(res.data.getUrl);
+                                    setUploading(false)
                                 }).catch((err) => { console.log(err) })
                         })
                         .catch((err) => { console.log(err) })
@@ -248,7 +247,11 @@ const CompleteProfile = ({ navigation, route }) => {
                 />
                 <ScrollView style={styles.bottom}>
                     <View style={styles.profile}>
-                        {
+                        {uploading ?
+                            <ImageBackground imageStyle={{ borderRadius: 150 }} source={{ uri: image }} style={styles.avatarStyle}>
+                                <ActivityIndicator size={20} color={Colors.buttonColor} />
+                            </ImageBackground>
+                            :
                             image ?
                                 <Image source={{ uri: image }} style={styles.avatarStyle} />
                                 :
@@ -381,7 +384,7 @@ const CompleteProfile = ({ navigation, route }) => {
                     {submit == true && ageGroup == "" && (
                         <Text style={styles.errorStyle}>  Please select age group</Text>
                     )}
-                    <Button loading={loading} text={'Register'} onPress={() => { checkNetwork() }} />
+                    <Button disabled={uploading} loading={loading} text={'Register'} onPress={() => { checkNetwork() }} />
                     <View style={{ marhinBottom: 20 }}></View>
                 </ScrollView>
                 <RegisterationModal
@@ -408,7 +411,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.backgroundColor
-
     },
     snackbarContainerStyle: {
         bottom: '10%',
