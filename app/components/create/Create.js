@@ -31,6 +31,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import Container from '../../common/Container';
+import moment from 'moment';
 function CreateBooking(props) {
   useEffect(() => {
     getCategories();
@@ -230,10 +231,10 @@ function CreateBooking(props) {
         else if (response.uri != undefined) {
           console.log(response)
           setVideo(response.uri);
-          let type=response.fileName.split('.')
+          let type = response.fileName.split('.')
           console.log(type)
           let userData = {
-            fileName: response.fileName,
+            fileName: moment().valueOf() + response.fileName,
             fileType: type[1]
           }
           console.log("response : ", response);
@@ -241,13 +242,18 @@ function CreateBooking(props) {
           AuthServices.getUrl(userData)
             .then((res) => {
               console.log(res.data)
-
-              const buffer = Buffer(`${response.uri}`, "base64");
-              axios.put(res.data.postUrl, buffer, {
+              const file = {
+                uri: response.uri,
+                name: userData.fileName,
+                type: userData.fileType
+              }
+              fetch(res.data.postUrl, {
+                method: "PUT",
                 headers: {
-                  "Content-Type": `${type[1]}; charset=utf-8`,
+                  "Content-Type": `${file.type}; charset=utf-8`,
                   "x-amz-acl": "public-read",
                 },
+                body: file,
               })
                 .then(async (responseData) => {
                   await LinkPreview.getPreview(res.data.getUrl)
@@ -256,11 +262,11 @@ function CreateBooking(props) {
                       setPreview(data.images[0])
                     })
                     .catch((err) => console.log(err))
-                  console.log(responseData.data.status)
+                  console.log(responseData)
                   setUpLoading(false)
                   setVideo(res.data.getUrl);
                   setPreview(res.data.getUrl)
-                }).catch((err) => { console.log(err); setUpLoading(false) })
+                }).catch((err) => { console.log("err.response : ", err.response); setUpLoading(false) })
             })
             .catch((err) => { console.log(err.response.data); setUpLoading(false) })
 
@@ -269,7 +275,7 @@ function CreateBooking(props) {
   }
 
   return (
-    <Container message={message} visible={visible} onPress={()=>setVisible(!visible)} >
+    <Container message={message} visible={visible} onPress={() => setVisible(!visible)} >
 
 
       <View style={styles.container}>
