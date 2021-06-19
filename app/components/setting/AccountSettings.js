@@ -596,12 +596,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: Colors.textColor
   },
-  contentContainerStyle: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: "5%",
-    width: width,
-  },
   image:
   {
     height: 100,
