@@ -25,17 +25,29 @@ const BookingCard = (props) => {
   return (
     <View style={styles.container}>
       <View style={styles.outer}>
-        <View style={styles.inner}>
-          <Image source={props.item.coach.imageUrl != null ? { uri: props.item.coach.imageUrl } : require('../../assets/splash.png')}
-            resizeMode="cover" style={styles.image} />
-          <View>
-            <Text style={styles.text}>{props.item.coach.firstName} {props.item.coach.lastName}</Text>
-            <Text style={styles.text1}>Started {moment(props.item.athleteRequest.createdAt).format("MMM DD")}</Text>
-          </View>
-        </View>
+        {
+          props?.item?.status == "pending" ?
+            <View style={styles.inner}>
+              {/* <Image source={props?.item?.coach?.imageUrl != null ? { uri: props?.item?.coach?.imageUrl } : require('../../assets/splash.png')}
+                resizeMode="cover" style={styles.image} /> */}
+              <View>
+                <Text style={styles.text}>{"No coach assign yet"}</Text>
+                <Text style={styles.text1}>Started {moment(props.item.athleteRequest.createdAt).format("MMM DD")}</Text>
+              </View>
+            </View>
+            :
+            <View style={styles.inner}>
+              <Image source={props?.item?.coach?.imageUrl != null ? { uri: props?.item?.coach?.imageUrl } : require('../../assets/splash.png')}
+                resizeMode="cover" style={styles.image} />
+              <View>
+                <Text style={styles.text}>{props?.item?.coach?.firstName} {props?.item?.coach?.lastName}</Text>
+                <Text style={styles.text1}>Started {moment(props.item.athleteRequest.createdAt).format("MMM DD")}</Text>
+              </View>
+            </View>
+        }
         <View style={styles.act}>
           {props.active ?
-            <Text style={styles.helveticaLight}>Active</Text>
+            <Text style={styles.helveticaLight}>{props.item.status}</Text>
             :
             <TouchableOpacity onPress={() => { props.navigation.navigate('Review', { bookingData: props.item }) }}>
               <Text style={styles.helveticaLight}>Review</Text>
@@ -46,10 +58,15 @@ const BookingCard = (props) => {
       <View style={styles.bar}></View>
       <View style={styles.bottom}>
         <Text style={styles.text2}>{props.item.athleteRequest.trainingType.title} Coaching</Text>
-        <TouchableOpacity style={{ alignItems: 'center', flexDirection: 'row' }} onPress={() => { props.navigation.navigate('Bookingdetails', { bookingId: props.item.id, data: props.item, flag: props.item.status == 'completionRequest' ? true : false }) }}>
-          <Text style={[styles.text2, { color: Colors.blackColor }]} >View Details</Text>
-          <Image source={require('../../assets/right-arrow.png')} style={styles.image1} />
-        </TouchableOpacity>
+        {
+          props?.item?.status == "pending" ?
+            null
+            :
+            <TouchableOpacity style={{ alignItems: 'center', flexDirection: 'row' }} onPress={() => { props.navigation.navigate('Bookingdetails', { bookingId: props.item.id, data: props.item, flag: props.item.status == 'completionRequest' ? true : false }) }}>
+              <Text style={[styles.text2, { color: Colors.blackColor }]} >View Details</Text>
+              <Image source={require('../../assets/right-arrow.png')} style={styles.image1} />
+            </TouchableOpacity>
+        }
       </View>
     </View>
   );
@@ -68,6 +85,9 @@ const styles = StyleSheet.create({
   {
     fontFamily: FontFamily.helveticaBold,
     fontSize: 16
+  },
+  helveticaLight: {
+    textTransform: "capitalize"
   },
   text1:
   {
