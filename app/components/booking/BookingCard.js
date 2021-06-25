@@ -60,7 +60,10 @@ const BookingCard = (props) => {
         <Text style={styles.text2}>{props.item.athleteRequest.trainingType.title} Coaching</Text>
         {
           props?.item?.status == "pending" ?
-            null
+            <TouchableOpacity style={{ alignItems: 'center', flexDirection: 'row' }} onPress={() => props.onCancel(props.item.AthleteRequestId)}>
+              <Text style={[styles.text2, { color: Colors.blackColor }]} >Cancel Request</Text>
+              {/* <Image source={require('../../assets/right-arrow.png')} style={styles.image1} /> */}
+            </TouchableOpacity>
             :
             <TouchableOpacity style={{ alignItems: 'center', flexDirection: 'row' }} onPress={() => { props.navigation.navigate('Bookingdetails', { bookingId: props.item.id, data: props.item, flag: props.item.status == 'completionRequest' ? true : false }) }}>
               <Text style={[styles.text2, { color: Colors.blackColor }]} >View Details</Text>

@@ -30,6 +30,7 @@ const BookingScreen = (props) => {
   const [bookings, setBookings] = useState([]);
   const [completedBookings, setCompletedBookings] = useState([]);
   const [loading, setLoading] = useState(false)
+  const [cancelLoading, setCancelLoading] = useState(false)
   const [visible, setVisible] = useState(false)
   const [message, setMessage] = useState("")
   useEffect(() => {
@@ -82,7 +83,23 @@ const BookingScreen = (props) => {
       });
   };
 
-
+  const handleCancelBooking = (id) => {
+    setCancelLoading(true)
+    BookingServices.cancelRequest({ "RequestId": id }, props?.token)
+      .then((response) => {
+        console.log("response.data : ",response.data)
+        setMessage(`${response.data.msg}`)
+        setVisible(true);
+        setCancelLoading(false)
+        getBookings();
+      })
+      .catch((error) => {
+        console.log("error.response.data : ",error.response.data)
+        setMessage(`${errorUtils.getError(error)}`)
+        setVisible(true);
+        setCancelLoading(false)
+      });
+  }
 
   return (
     <Container onPress={() => setVisible(!visible)} message={message} visible={visible}>
@@ -115,7 +132,7 @@ const BookingScreen = (props) => {
             </TouchableOpacity>
           </View>
           {
-            loading ?
+            loading || cancelLoading ?
               <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
                 <ActivityIndicator size={20} color={'#030E2D'} />
               </View>
@@ -133,7 +150,7 @@ const BookingScreen = (props) => {
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({ item, index }) => {
                       return (
-                        <BookingCard item={item} navigation={props.navigation} active={active} />
+                        <BookingCard item={item} navigation={props.navigation} active={active} onCancel={(id) => handleCancelBooking(id)} />
                       )
                     }}
                   />
@@ -218,6 +235,4 @@ const mapStateToProps = (state) => ({
 
 });
 
-export default connect(
-  mapStateToProps
-)(BookingScreen);
+export default connect(mapStateToProps)(BookingScreen);

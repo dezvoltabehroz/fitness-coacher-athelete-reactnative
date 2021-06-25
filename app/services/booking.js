@@ -27,7 +27,7 @@ const Api = {
         return axiosInstance.get(`athlete/getRequests`, userData, configToken(token))
     },
     cancelRequest:function (userData, token) {
-        return axiosInstance.get(`athlete/cancelRequest`, userData, configToken(token))
+        return axiosInstance.post(`athlete/cancelRequest`, userData, configToken(token))
     },
     addRatingtoCoach: function (userData, token) {
         return axiosInstance.post(`athlete/coachRating`, userData, configToken(token))
